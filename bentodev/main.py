@@ -1,4 +1,5 @@
 import click
+from .setup import setup
 
 
 @click.group()
@@ -7,6 +8,7 @@ def cli():
     """BentoDev
     Used to develop themes locally for BentoBox sites!
     """
+    setup()
 
 ######################################################
 
