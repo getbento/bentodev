@@ -1,4 +1,0 @@
-#!/bin/bash
-
-DIRECTORY=$(cd `dirname $0` && pwd)
-python "$DIRECTORY/../main.py" $@

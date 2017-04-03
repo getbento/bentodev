@@ -18,37 +18,26 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='bentodev',
-
     version='0.0.1',
-
     description='BentoBox Local Development System',
     long_description=long_description,
-
     url='https://github.com/getbento/bentodev',
-
     author='BentoBox',
     author_email='dylan@getbento.com',
-
     classifiers=[
         'Development Status :: 3 - Alpha',
 
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
-
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
     ],
-
     keywords='bentobox bentodev',
-
-    entry_points={
-        'console_scripts': [
-            'sample=sample:main',
-        ],
-    },
-
-
+    install_requires=[
+        'Click',
+    ],
+    entry_points='''
+        [console_scripts]
+        bentodev=bentodev.main:cli
+    ''',
 )
