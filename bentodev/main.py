@@ -1,5 +1,6 @@
 import click
-from .setup import setup
+from .command_functions import get_repo_list
+from .setup import check, check_user, create_user_structure, token_auth
 
 
 @click.group()
@@ -8,19 +9,20 @@ def cli():
     """BentoDev
     Used to develop themes locally for BentoBox sites!
     """
-    setup()
+    check()
 
 ######################################################
 
 
 @cli.command('config')
-@click.argument('arg')
-@click.option('--option', metavar='KN', default=10,
-              help='full option')
-def config(arg, option):
+@click.option('--username')
+def config(username):
     """Base configuration"""
-    click.echo('Testing config %s %s' % (arg, option))
-
+    if username:
+        create_user_structure(verbose=False)
+        check_user(verbose=False, username=username)
+    else:
+        check()
 
 ######################################################
 
@@ -28,7 +30,8 @@ def config(arg, option):
 @cli.command('list')
 def list():
     """List accounts and themes you have access too."""
-    click.echo('list list list')
+    token = token_auth()
+    get_repo_list(token)
 
 #####################################################
 
