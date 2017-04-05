@@ -79,7 +79,43 @@ def token_auth():
     if not r.ok:
         print('Incorrect Token')
         raise SystemExit
+    return token
 
+
+def verify_token(token):
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    data = {
+        'token': token,
+    }
+
+    r = requests.post(verify_url, data=json.dumps(data), headers=headers)
+    if not r.ok:
+        print('Token Expired')
+        return False
+    return True
+
+
+def get_token():
+    global_config = os.path.dirname(os.path.realpath(__file__)) + '/config.json'
+    config_file = open(global_config, "r")
+    config_data = json.load(config_file)
+    config_file.close()
+    token = ''
+    while not token:
+        # If no token in config_data
+        # Attempt to get new token and write to file
+        if not config_data['BENTOBOX_TOKEN']:
+            config_data['BENTOBOX_TOKEN'] = token_auth()
+            with open(global_config, "w") as config_file:
+                json.dump(config_data, config_file, sort_keys=True, indent=4)
+            config_file.close()
+        # If token found, verify token
+        elif not verify_token(config_data['BENTOBOX_TOKEN']):
+            config_data['BENTOBOX_TOKEN'] = ''
+        else:
+            token = config_data['BENTOBOX_TOKEN']
     return token
 
 

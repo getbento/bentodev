@@ -1,6 +1,6 @@
 import click
 from .command_functions import get_repo_list
-from .setup import check, check_user, create_user_structure, token_auth
+from .utils import check, check_user, create_user_structure, get_token
 
 
 @click.group()
@@ -30,7 +30,7 @@ def config(username):
 @cli.command('list')
 def list():
     """List accounts and themes you have access too."""
-    token = token_auth()
+    token = get_token()
     get_repo_list(token)
 
 #####################################################
