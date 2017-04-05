@@ -1,8 +1,12 @@
 import json
 import requests
+from .utils import github_account
 
 
 def get_repo_list(token):
+
+    github_account()
+
     headers = {
         'Content-Type': 'application/json',
         'Authorization': 'JWT ' + token,

@@ -1,12 +1,14 @@
 import json
 import os
 import requests
+from webbrowser import open_new_tab
 
 from getpass import getpass
 from shutil import copy2
 
 token_url = 'http://localtest.me:8000/api/api-token-auth/'
 verify_url = 'http://localtest.me:8000/api/api-token-verify/'
+github_account_url = 'http://localtest.me:8000/api/github_account/'
 
 home_dir = os.path.expanduser('~')
 bentodev_dir = home_dir + '/bentodev/'
@@ -117,6 +119,30 @@ def get_token():
         else:
             token = config_data['BENTOBOX_TOKEN']
     return token
+
+
+def github_account(verbose=True):
+    token = get_token()
+    github_check = False
+    while not github_check:
+        if token:
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'JWT ' + token,
+            }
+            r = requests.get(github_account_url, headers=headers)
+            if r.ok and r.json() and verbose:
+                print('Connected to GitHub Account: {}'.format(str(r.json()[0]['username'])))
+                github_check = True
+            elif r.ok and not r.json():
+                print('You have not connected your GitHub!')
+                print('Opening BentoBox Admin to Connect GitHub Account!')
+                open_new_tab('http://seamores.localtest.me:8000/bentobox/developers/')
+                print("Waiting. Have you connected your GitHub Account?")
+                complete_flag = input("Type 'yes' to continue, or 'no' to cancel: ")
+                if complete_flag != 'yes':
+                    raise SystemExit
+    return True
 
 
 def check():
