@@ -1,5 +1,5 @@
 import click
-from .command_functions import get_repo_list
+from .command_functions import get_repo_list, clone_repo
 from .utils import check, check_user, create_user_structure, get_token
 
 
@@ -28,10 +28,20 @@ def config(username):
 
 
 @cli.command('list')
-def list():
+def list(clone):
     """List accounts and themes you have access too."""
     token = get_token()
     get_repo_list(token)
+
+#####################################################
+
+
+@cli.command('clone')
+@click.argument('slug')
+def clone(slug):
+    """Clone an account you have access too."""
+    token = get_token()
+    clone_repo(token, slug)
 
 #####################################################
 
