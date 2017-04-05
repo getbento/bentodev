@@ -121,8 +121,7 @@ def get_token():
     return token
 
 
-def github_account(verbose=True):
-    token = get_token()
+def github_account(token, verbose=True):
     github_check = False
     while not github_check:
         if token:
