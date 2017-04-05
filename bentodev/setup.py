@@ -63,11 +63,12 @@ def token_auth():
         'password': pw,
     }
 
-    r = requests.post(token_url, data=json.dumps(data), headers=headers)
+    # auth=('user', 'pass'
+    r = requests.post(token_url, auth=(user, pw), data=json.dumps(data), headers=headers)
     del pw
 
     token = ''
-    if r.status_code == '200' and 'token' in r.json():
+    if r.ok and r.json()['token']:
         token = r.json()['token']
 
     data = {
@@ -75,7 +76,7 @@ def token_auth():
     }
 
     r = requests.post(verify_url, data=json.dumps(data), headers=headers)
-    if r.status_code == '200':
+    if not r.ok:
         print('Incorrect Token')
         raise SystemExit
 
