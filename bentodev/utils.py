@@ -94,7 +94,7 @@ def verify_token(token):
 
     r = requests.post(verify_url, data=json.dumps(data), headers=headers)
     if not r.ok:
-        print('Token Expired')
+        # print('Token Expired')
         return False
     return True
 
