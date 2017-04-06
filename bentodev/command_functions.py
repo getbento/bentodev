@@ -23,6 +23,10 @@ def list_available_repos():
 
 
 def run_flask(repo):
+    cloned_themes = get_cloned_themes()
+    if not repo in cloned_themes:
+        print("Theme has not been cloned!")
+        raise SystemExit
     dir = os.path.dirname(os.path.realpath(__file__))
     os.environ['REPO'] = repo
     os.environ['FLASK_APP'] = dir + '/server.py'
