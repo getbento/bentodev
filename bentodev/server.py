@@ -6,6 +6,7 @@ import requests
 from . import filters
 from .environment import StaticFilesExtension
 from inspect import getmembers, isfunction
+from jinja2.ext import do
 
 
 home_dir = path.expanduser('~')
@@ -18,6 +19,7 @@ bento_url = 'getbento.com/'
 help_url = '?help'
 
 repo = str(os.environ['REPO'])
+account = str(os.environ['ACCOUNT'])
 
 
 def create_app():
@@ -27,6 +29,7 @@ def create_app():
     app.debug = True
 
     app.jinja_env.add_extension(StaticFilesExtension)
+    app.jinja_env.add_extension(do)
 
     app.jinja_env.autoescape = False
     my_filters = {name: function for name, function in getmembers(filters) if isfunction(function)}
@@ -46,7 +49,7 @@ def handle_request(path):
     headers = {
         'X-Requested-With': 'XMLHttpRequest',
     }
-    request_url = 'http://{}.{}{}{}'.format('unionsquarecafe-copy', bento_url, path, help_url)
+    request_url = 'http://{}.{}{}{}'.format(account, bento_url, path, help_url)
     print('REQUEST: ' + request_url)
     try:
         r = requests.get(request_url, headers=headers)

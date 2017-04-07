@@ -146,7 +146,7 @@ def github_account(token, verbose=True):
                 complete_flag = input("Type 'yes' to continue, or 'no' to cancel: ")
                 if complete_flag != 'yes':
                     raise SystemExit
-    return True
+    return github_check
 
 
 def check():

@@ -1,6 +1,6 @@
 import os
 import click
-from .command_functions import get_repo_list, clone_repo, run_flask, list_available_repos
+from .command_functions import get_repo_list, clone_repo, run_flask, list_accounts, get_theme
 from .utils import check, check_user, create_user_structure, get_token
 from flask.cli import FlaskGroup
 
@@ -33,7 +33,7 @@ def config(username):
 def list():
     """List accounts and themes you have access too."""
     token = get_token()
-    get_repo_list(token)
+    list_accounts(token)
 
 #####################################################
 
@@ -49,11 +49,13 @@ def clone(slug):
 
 
 @cli.command('start')
-@click.argument('repo', required=False)
-def start(repo):
+@click.argument('account', required=False)
+def start(account):
     """Begin running the development server"""
     # click.echo('runserver at %s.localdev.me:8000' % (site))
-    if repo:
-        run_flask(repo)
+    token = get_token()
+    if account:
+        repo = get_theme(token, account)
+        run_flask(account, repo)
     else:
-        list_available_repos()
+        list_accounts(token)
