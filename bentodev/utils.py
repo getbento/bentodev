@@ -1,4 +1,4 @@
-import json
+bentodev/server.pyimport json
 import os
 import requests
 from webbrowser import open_new_tab
@@ -13,6 +13,7 @@ github_account_url = 'http://localtest.me:8000/api/github_account/'
 home_dir = os.path.expanduser('~')
 bentodev_dir = home_dir + '/bentodev/'
 user_config = bentodev_dir + 'config.json'
+sites_dir = bentodev_dir + 'sites/'
 
 
 def create_user_structure(verbose):
@@ -24,6 +25,10 @@ def create_user_structure(verbose):
         if verbose:
             print("Creating ~/bentodev/ ...")
         os.makedirs(bentodev_dir)
+    if not os.path.exists(sites_dir):
+        if verbose:
+            print("Creating ~/bentodev/sites/ ...")
+        os.makedirs(sites_dir)
     if not os.path.exists(user_config):
         if verbose:
             print("Creating ~/bentodev/config.json ...")
