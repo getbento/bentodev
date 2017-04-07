@@ -14,7 +14,7 @@ bentodev_dir = home_dir + '/bentodev/'
 static_dir = bentodev_dir + 'sites/{}/assets/'
 template_dir = bentodev_dir + 'sites/{}/templates/'
 
-preview_url = 'getbento.com/'
+bento_url = 'getbento.com/'
 help_url = '?help'
 
 repo = str(os.environ['REPO'])
@@ -46,20 +46,18 @@ def handle_request(path):
     headers = {
         'X-Requested-With': 'XMLHttpRequest',
     }
-    request_url = 'http://{}.{}{}{}'.format('unionsquarecafe-copy', preview_url, path, help_url)
-    print(request_url)
+    request_url = 'http://{}.{}{}{}'.format('unionsquarecafe-copy', bento_url, path, help_url)
+    print('REQUEST: ' + request_url)
     try:
         r = requests.get(request_url, headers=headers)
-        context_data = r.json()
-        return context_data
+        return r.json()
     except Exception as e:
         print(e)
+        raise SystemExit
 
 
 @app.route('/assets/<path:path>')
 def static_file(path):
-    file = app.static_folder + path
-    print(file)
     return app.send_static_file(path)
 
 
@@ -67,8 +65,12 @@ def static_file(path):
 @app.route('/<path:path>')
 def path_router(path):
     context_data = handle_request(path)
-    template = context_data['current']['template']
-    return render_template(template, **context_data)
+    try:
+        template = context_data['current']['template']
+        return render_template(template, **context_data)
+    except Exception as e:
+        print(e)
+        raise SystemExit
 
 
 if __name__ == "__main__":
