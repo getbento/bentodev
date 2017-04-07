@@ -1,4 +1,4 @@
-bentodev/filters.pyfrom jinja2.ext import Extension
+from jinja2.ext import Extension
 
 
 class StaticFilesExtension(Extension):
