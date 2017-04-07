@@ -1,10 +1,10 @@
-from flask import Flask, send_from_directory, request, render_template
+from flask import Flask, render_template
 from os import path
 # import click
 import os
 import requests
 from . import filters
-from .environment import StaticFilesExtension, BentoJinja2Environment
+from .environment import StaticFilesExtension
 from inspect import getmembers, isfunction
 
 
@@ -27,6 +27,7 @@ def create_app():
     app.debug = True
 
     app.jinja_env.add_extension(StaticFilesExtension)
+
     app.jinja_env.autoescape = False
     my_filters = {name: function for name, function in getmembers(filters) if isfunction(function)}
 
