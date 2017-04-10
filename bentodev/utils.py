@@ -1,14 +1,11 @@
 import json
 import os
-import requests
 from webbrowser import open_new_tab
 
 from getpass import getpass
 from shutil import copy2
+from .factory import TokenRequest, VerifyRequest, GitHubAccountRequest
 
-token_url = 'http://localtest.me:8000/api/api-token-auth/'
-verify_url = 'http://localtest.me:8000/api/api-token-verify/'
-github_account_url = 'http://localtest.me:8000/api/github_account/'
 
 home_dir = os.path.expanduser('~')
 bentodev_dir = home_dir + '/bentodev/'
@@ -39,7 +36,6 @@ def create_user_structure(verbose):
 
 def check_user(verbose, username=None):
     user = None
-
     while not user:
         config_file = open(user_config, "r")
         config_data = json.load(config_file)
@@ -60,46 +56,21 @@ def token_auth():
     user = check_user(verbose=False)
     print('Enter Password for BentoBox User: %s' % user)
     pw = getpass(prompt="Password: ")
-
-    headers = {
-        'Content-Type': 'application/json',
-    }
-
-    data = {
-        'email': user,
-        'password': pw,
-    }
-
-    # auth=('user', 'pass'
-    r = requests.post(token_url, auth=(user, pw), data=json.dumps(data), headers=headers)
+    r = TokenRequest(data={'email': user, 'password': pw})
+    r.post()
     del pw
-
     token = ''
-    if r.ok and r.json()['token']:
+    if r.json()['token']:
         token = r.json()['token']
-
-    data = {
-        'token': token,
-    }
-
-    r = requests.post(verify_url, data=json.dumps(data), headers=headers)
-    if not r.ok:
-        print('Incorrect Token')
-        raise SystemExit
-    return token
+    if verify_token(token):
+        return token
 
 
 def verify_token(token):
-    headers = {
-        'Content-Type': 'application/json',
-    }
-    data = {
-        'token': token,
-    }
-
-    r = requests.post(verify_url, data=json.dumps(data), headers=headers)
-    if not r.ok:
-        # print('Token Expired')
+    r = VerifyRequest(data={'token': token})
+    r.post()
+    if not r.request.ok:
+        print('Token Expired')
         return False
     return True
 
@@ -111,14 +82,11 @@ def get_token():
     config_file.close()
     token = ''
     while not token:
-        # If no token in config_data
-        # Attempt to get new token and write to file
         if not config_data['BENTOBOX_TOKEN']:
             config_data['BENTOBOX_TOKEN'] = token_auth()
             with open(global_config, "w") as config_file:
                 json.dump(config_data, config_file, sort_keys=True, indent=4)
             config_file.close()
-        # If token found, verify token
         elif not verify_token(config_data['BENTOBOX_TOKEN']):
             config_data['BENTOBOX_TOKEN'] = ''
         else:
@@ -130,12 +98,9 @@ def github_account(token, verbose=True):
     github_check = False
     while not github_check:
         if token:
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'JWT ' + token,
-            }
-            r = requests.get(github_account_url, headers=headers)
-            if r.ok and r.json() and verbose:
+            r = GitHubAccountRequest(token=token)
+            r.get()
+            if r.request.ok and r.json() and verbose:
                 print('Connected to GitHub Account: {}'.format(str(r.json()[0]['username'])))
                 github_check = True
             elif r.ok and not r.json():

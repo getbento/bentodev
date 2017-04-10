@@ -1,8 +1,11 @@
-import os
 import click
-from .command_functions import get_repo_list, clone_repo, run_flask, list_accounts, get_theme
+from .command_functions import (
+    clone_repo,
+    run_flask,
+    list_accounts,
+    get_theme,
+    ListFlags)
 from .utils import check, check_user, create_user_structure, get_token
-from flask.cli import FlaskGroup
 
 
 @click.group()
@@ -39,11 +42,14 @@ def list():
 
 
 @cli.command('clone')
-@click.argument('slug')
+@click.argument('slug', required=False)
 def clone(slug):
     """Clone an account you have access too."""
     token = get_token()
-    clone_repo(token, slug)
+    if slug:
+        clone_repo(token, slug)
+    else:
+        list_accounts(token, ListFlags.CLONE)
 
 #####################################################
 
@@ -58,4 +64,4 @@ def start(account):
         repo = get_theme(token, account)
         run_flask(account, repo)
     else:
-        list_accounts(token)
+        list_accounts(token, ListFlags.START)
