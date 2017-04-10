@@ -5,14 +5,14 @@ from git import Repo
 
 from .utils import github_account
 from shutil import get_terminal_size
-from .factory import RequestFactory, ACCOUNT_URL, ACCOUNTS_URL
+from .factory import RequestFactory, AccountRequest, ACCOUNT_URL, ACCOUNTS_URL, THEMES_URL
 from webbrowser import open_new_tab
 
-home_dir = os.path.expanduser('~')
-bentodev_dir = home_dir + '/bentodev/'
-themes_dir = bentodev_dir + 'sites/'
+HOME_DIR = os.path.expanduser('~')
+BENTODEV_DIR = HOME_DIR + '/bentodev/'
+THEMES_DIR = BENTODEV_DIR + 'sites/'
 
-width = int((get_terminal_size()[0] - 5) / 2)
+WIDTH = int((get_terminal_size()[0] - 5) / 2)
 
 
 class ListFlags(Enum):
@@ -21,23 +21,29 @@ class ListFlags(Enum):
 
 
 def get_theme(token, account):
-    r = RequestFactory(url=ACCOUNT_URL, token=token)
+    kwargs = {
+        'account': account,
+        'help': True,
+    }
+    r = AccountRequest(url=ACCOUNT_URL, token=token, **kwargs)
     r.get()
     if r.request.ok and r.json():
         theme_pk = r.json()[0]['theme']
         r.url = '{}{}'.format(THEMES_URL, theme_pk)
+        print(r.url)
+        r.get()
         if r.request.ok and r.json():
-            r.get()
+            # r.get()
             return r.json()['slug']
 
 
 def get_cloned_themes():
-    return [name for name in os.listdir(themes_dir)]
+    return {name for name in os.listdir(THEMES_DIR)}
 
 
 def list_available_repos():
     print("Select a theme to work with:")
-    print('{0:-<{width}}'.format('-', '', width=width*2))
+    print('{0:-<{WIDTH}}'.format('-', '', WIDTH=WIDTH*2))
     [print(theme) for theme in get_cloned_themes()]
 
 
@@ -46,8 +52,8 @@ def list_accounts(token, flag=None):
         r = RequestFactory(url=ACCOUNTS_URL, token=token)
         r.get()
         if r.request.ok and r.json():
-            print('{0: <{2}} | {1: <{2}}'.format('Account', 'Theme', width))
-            print('{0:-<{width}}'.format('-', '', width=width*2))
+            print('{0: <{2}} | {1: <{2}}'.format('Account', 'Theme', WIDTH))
+            print('{0:-<{WIDTH}}'.format('-', '', WIDTH=WIDTH*2))
             cloned_themes = get_cloned_themes()
             for account in r.json():
                 slug = account['slug']
@@ -57,7 +63,7 @@ def list_accounts(token, flag=None):
                     if flag is ListFlags.CLONE:
                         break
                     status = '[cloned]'
-                print('{0: <{3}} | {1:<15} {2: <{3}}'.format(slug, theme_name, status, width))
+                print('{0: <{3}} | {1:<15} {2: <{3}}'.format(slug, theme_name, status, WIDTH))
 
 
 def run_flask(account, repo):
@@ -82,7 +88,7 @@ def clone_repo(token, slug):
                 if theme['slug'] == slug:
                     github_repo_url = (theme['github_repo_url'])
                     try:
-                        clone_dir = '{}{}'.format(themes_dir, slug)
+                        clone_dir = '{}{}'.format(THEMES_DIR, slug)
                         Repo.clone_from(github_repo_url, clone_dir)
                         print('Succesfully cloned {} to:\n{}'.format(slug, clone_dir))
                     except Exception as e:

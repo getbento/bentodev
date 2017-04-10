@@ -1,31 +1,26 @@
 from flask import Flask, render_template
-from os import path
-# import click
-import os
-import requests
+from os import path, environ
 from . import filters
 from .environment import StaticFilesExtension
 from inspect import getmembers, isfunction
 from jinja2.ext import do
+from .factory import HelpDataRequest
 
 
-home_dir = path.expanduser('~')
-bentodev_dir = home_dir + '/bentodev/'
+HOME_DIR = path.expanduser('~')
+BENTODEV_DIR = HOME_DIR + '/bentodev/'
 
-static_dir = bentodev_dir + 'sites/{}/assets/'
-template_dir = bentodev_dir + 'sites/{}/templates/'
+STATIC_DIR = BENTODEV_DIR + 'sites/{}/assets/'
+TEMPLATE_DIR = BENTODEV_DIR + 'sites/{}/templates/'
 
-bento_url = 'getbento.com/'
-help_url = '?help'
-
-repo = str(os.environ['REPO'])
-account = str(os.environ['ACCOUNT'])
+REPO = str(environ['REPO'])
+ACCOUNT = str(environ['ACCOUNT'])
 
 
 def create_app():
     app = Flask(__name__)
-    app.template_folder = template_dir.format(repo)
-    app.static_folder = static_dir.format(repo)
+    app.template_folder = TEMPLATE_DIR.format(REPO)
+    app.static_folder = STATIC_DIR.format(REPO)
     app.debug = True
 
     app.jinja_env.add_extension(StaticFilesExtension)
@@ -46,13 +41,15 @@ app = create_app()
 
 
 def handle_request(path):
-    headers = {
-        'X-Requested-With': 'XMLHttpRequest',
+    kwargs = {
+        'account': ACCOUNT,
+        'path': path,
+        'help': True,
     }
-    request_url = 'http://{}.{}{}{}'.format(account, bento_url, path, help_url)
-    print('REQUEST: ' + request_url)
+    r = HelpDataRequest(**kwargs)
+    print('REQUEST: ' + r.url)
     try:
-        r = requests.get(request_url, headers=headers)
+        r.get()
         return r.json()
     except Exception as e:
         print(e)

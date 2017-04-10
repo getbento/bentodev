@@ -7,44 +7,44 @@ from shutil import copy2
 from .factory import TokenRequest, VerifyRequest, GitHubAccountRequest
 
 
-home_dir = os.path.expanduser('~')
-bentodev_dir = home_dir + '/bentodev/'
-user_config = bentodev_dir + 'config.json'
-sites_dir = bentodev_dir + 'sites/'
+HOME_DIR = os.path.expanduser('~')
+BENTODEV_DIR = '{}{}'.format(HOME_DIR, '/bentodev/')
+USER_CONFIG = '{}{}'.format(BENTODEV_DIR, 'config.json')
+SITE_DIR = '{}{}'.format(BENTODEV_DIR, 'sites/')
 
 
 def create_user_structure(verbose):
-    if not os.path.exists(home_dir):
+    if not os.path.exists(HOME_DIR):
         if verbose:
             print('No home directory. Exiting gracefully.')
         raise SystemExit
-    if not os.path.exists(bentodev_dir):
+    if not os.path.exists(BENTODEV_DIR):
         if verbose:
             print("Creating ~/bentodev/ ...")
-        os.makedirs(bentodev_dir)
-    if not os.path.exists(sites_dir):
+        os.makedirs(BENTODEV_DIR)
+    if not os.path.exists(SITE_DIR):
         if verbose:
             print("Creating ~/bentodev/sites/ ...")
-        os.makedirs(sites_dir)
-    if not os.path.exists(user_config):
+        os.makedirs(SITE_DIR)
+    if not os.path.exists(USER_CONFIG):
         if verbose:
             print("Creating ~/bentodev/config.json ...")
         dir = os.path.dirname(os.path.realpath(__file__))
         setup_file = dir + '/setup_files/config.json'
-        copy2(setup_file, bentodev_dir)
+        copy2(setup_file, BENTODEV_DIR)
 
 
 def check_user(verbose, username=None):
     user = None
     while not user:
-        config_file = open(user_config, "r")
+        config_file = open(USER_CONFIG, "r")
         config_data = json.load(config_file)
         config_file.close()
         if not config_data['BENTO_USER']:
             if not username:
                 username = input("Enter BentoBox Username: ")
             config_data['BENTO_USER'] = username
-            with open(user_config, "w") as config_file:
+            with open(USER_CONFIG, "w") as config_file:
                 json.dump(config_data, config_file, sort_keys=True, indent=4)
             config_file.close()
         else:
@@ -103,7 +103,7 @@ def github_account(token, verbose=True):
             if r.request.ok and r.json() and verbose:
                 print('Connected to GitHub Account: {}'.format(str(r.json()[0]['username'])))
                 github_check = True
-            elif r.ok and not r.json():
+            elif r.request.ok and not r.json():
                 print('You have not connected your GitHub!')
                 print('Opening BentoBox Admin to Connect GitHub Account!')
                 open_new_tab('http://seamores.localtest.me:8000/bentobox/developers/')
