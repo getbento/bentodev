@@ -8,6 +8,8 @@ from decimal import Decimal
 from dateutil import parser
 from money import Money
 
+from .image_utils import generate_resize_url, get_raw_image_url
+
 
 def datetime(value, format='%d-%m-%Y %H:%M'):
     if not value:
@@ -37,6 +39,34 @@ def time(value, format='%H:%M'):
         value = parser.parse(value)
 
     return value.strftime(format)
+
+
+def raw_image(source):
+    return get_raw_image_url(source)
+
+
+def thumbnail(source):
+    return generate_resize_url(source, width=100)
+
+
+def small(source):
+    return generate_resize_url(source, width=300)
+
+
+def medium(source):
+    return generate_resize_url(source, width=600)
+
+
+def large(source):
+    return generate_resize_url(source, width=1000)
+
+
+def xlarge(source):
+    return generate_resize_url(source, width=1800)
+
+
+def resize(source, width=1200, height=None, fit='max'):
+    return generate_resize_url(source, width, height, fit)
 
 
 def money(amount, locale='en_US', format=u'¤#,##0.00', currency_digits=False):

@@ -1,20 +1,23 @@
 from flask import Flask, render_template
 from os import path, environ
 from . import filters
-from .environment import StaticFilesExtension
+from .environment import StaticFilesExtension, ScssUrlExtension, SilentUndefined, CsrfExtention
 from inspect import getmembers, isfunction
 from jinja2.ext import do
 from .factory import HelpDataRequest
+from sassutils.wsgi import SassMiddleware
+import jinja2.ext
 
+
+REPO = str(environ['REPO'])
+ACCOUNT = str(environ['ACCOUNT'])
 
 HOME_DIR = path.expanduser('~')
 BENTODEV_DIR = HOME_DIR + '/bentodev/'
 
+REPO_DIR = '{}{}{}/'.format(BENTODEV_DIR, 'sites/', REPO)
 STATIC_DIR = BENTODEV_DIR + 'sites/{}/assets/'
 TEMPLATE_DIR = BENTODEV_DIR + 'sites/{}/templates/'
-
-REPO = str(environ['REPO'])
-ACCOUNT = str(environ['ACCOUNT'])
 
 
 def create_app():
@@ -23,17 +26,27 @@ def create_app():
     app.static_folder = STATIC_DIR.format(REPO)
     app.debug = True
 
-    app.jinja_env.add_extension(StaticFilesExtension)
-    app.jinja_env.add_extension(do)
-
     app.jinja_env.autoescape = False
-    my_filters = {name: function for name, function in getmembers(filters) if isfunction(function)}
+    app.jinja_env.undefined = SilentUndefined
 
-    app.jinja_env.filters.update(my_filters)
+    app.jinja_env.add_extension(CsrfExtention)
+    app.jinja_env.add_extension(StaticFilesExtension)
+    app.jinja_env.add_extension(ScssUrlExtension)
+    app.jinja_env.add_extension(jinja2.ext.do)
+    app.jinja_env.add_extension(jinja2.ext.loopcontrols)
+    app.jinja_env.add_extension(jinja2.ext.with_)
+
+    custom_filters = {name: function for name, function in getmembers(filters) if isfunction(function)}
+    app.jinja_env.filters.update(custom_filters)
     app.config.update(
         DEBUG=True,
         TEMPLATES_AUTO_RELOAD=True
     )
+
+    app.wsgi_app = SassMiddleware(app.wsgi_app, {
+        'bentodev': (REPO + 'assets/sass', REPO + 'assets/css')
+    })
+
     return app
 
 
@@ -58,6 +71,9 @@ def handle_request(path):
 
 @app.route('/assets/<path:path>')
 def static_file(path):
+    # check path for .css
+    # if yes, do the compliation
+
     return app.send_static_file(path)
 
 
