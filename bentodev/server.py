@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from os import path, environ
 from . import filters
-from .environment import StaticFilesExtension, ScssUrlExtension, SilentUndefined, CsrfExtention
+from .environment import StaticFilesExtension, ScssUrlExtension, SilentUndefined, CsrfExtension
 from inspect import getmembers, isfunction
 from jinja2.ext import do
 from .factory import HelpDataRequest
@@ -29,7 +29,7 @@ def create_app():
     app.jinja_env.autoescape = False
     app.jinja_env.undefined = SilentUndefined
 
-    app.jinja_env.add_extension(CsrfExtention)
+    app.jinja_env.add_extension(CsrfExtension)
     app.jinja_env.add_extension(StaticFilesExtension)
     app.jinja_env.add_extension(ScssUrlExtension)
     app.jinja_env.add_extension(jinja2.ext.do)

@@ -2,30 +2,10 @@ from jinja2.ext import Extension
 from jinja2 import Undefined, nodes
 
 
-# class CsrfExtention(Extension):
-#     """
-#     Moc out Django crsf_extension tag
-#     """
-#     tags = set(['csrf_token'])
-
-#     def __init__(self, environment):
-#         super(CsrfExtention, self).__init__(environment)
-
-#         # add the defaults to the environment
-#         environment.extend(
-#             fragment_cache_prefix='',
-#             fragment_cache=None
-#         )
-
-#     def parse(self, parser):
-#         lineno = next(parser.stream).lineno
-#         args = [parser.parse_expression()]
-#         lineno = next(parser.stream).lineno
-#         return nodes.CallBlock(self.call_method('_csrf_token', args), [], [], []).set_lineno(lineno)
-
-class CsrfExtention(Extension):
+class CsrfExtension(Extension):
     """
     Implements django's `{% csrf_token %}` tag.
+    Taken from: https://github.com/MoritzS/jinja2-django-tags/blob/master/jdj_tags/extensions.py
     """
     tags = set(['csrf_token'])
 
