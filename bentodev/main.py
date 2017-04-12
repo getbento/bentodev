@@ -1,11 +1,11 @@
 import click
-from .command_functions import (
+from bentodev.command_functions import (
     clone_repo,
     run_flask,
     list_accounts,
     get_theme,
     ListFlags)
-from .utils import check, check_user, create_user_structure, get_token
+from bentodev.utils import check, check_user, create_user_structure, get_token
 
 
 @click.group()

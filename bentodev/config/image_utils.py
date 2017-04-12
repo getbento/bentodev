@@ -1,4 +1,8 @@
-from .settings import AWS_BUCKET_URL, IMGIX_URL, AWS_S3_CUSTOM_DOMAIN
+from bentodev.config.settings import (
+    AWS_BUCKET_URL,
+    IMGIX_URL,
+    AWS_S3_CUSTOM_DOMAIN
+)
 
 
 class Bunch:

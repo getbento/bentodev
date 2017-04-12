@@ -1,11 +1,13 @@
 import json
 import os
 from webbrowser import open_new_tab
-
 from getpass import getpass
 from shutil import copy2
-from .factory import TokenRequest, VerifyRequest, GitHubAccountRequest
-
+from bentodev.config.factory import (
+    TokenRequest,
+    VerifyRequest,
+    GitHubAccountRequest
+)
 
 HOME_DIR = os.path.expanduser('~')
 BENTODEV_DIR = '{}{}'.format(HOME_DIR, '/bentodev/')
@@ -76,7 +78,7 @@ def verify_token(token):
 
 
 def get_token():
-    global_config = os.path.dirname(os.path.realpath(__file__)) + '/config.json'
+    global_config = os.path.dirname(os.path.realpath(__file__)) + '/base_config.json'
     config_file = open(global_config, "r")
     config_data = json.load(config_file)
     config_file.close()

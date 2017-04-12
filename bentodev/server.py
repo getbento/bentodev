@@ -1,13 +1,18 @@
-from flask import Flask, render_template
-from os import path, environ
-from . import filters
-from .environment import StaticFilesExtension, ScssUrlExtension, SilentUndefined, CsrfExtension
-from inspect import getmembers, isfunction
-from jinja2.ext import do
-from .factory import HelpDataRequest
-from sassutils.wsgi import SassMiddleware
 import jinja2.ext
 
+from flask import Flask, render_template
+from inspect import getmembers, isfunction
+from os import path, environ
+from sassutils.wsgi import SassMiddleware
+
+from bentodev.config import filters
+from bentodev.config.environment import (
+    CsrfExtension,
+    ScssUrlExtension,
+    SilentUndefined,
+    StaticFilesExtension,
+)
+from bentodev.config.factory import HelpDataRequest
 
 REPO = str(environ['REPO'])
 ACCOUNT = str(environ['ACCOUNT'])
@@ -71,9 +76,8 @@ def handle_request(path):
 
 @app.route('/assets/<path:path>')
 def static_file(path):
-    # check path for .css
-    # if yes, do the compliation
-
+    if 'scss' in path:
+        print(path)
     return app.send_static_file(path)
 
 

@@ -2,11 +2,18 @@ import os
 
 from enum import Enum
 from git import Repo
-
-from .utils import github_account
 from shutil import get_terminal_size
-from .factory import RequestFactory, AccountRequest, ACCOUNT_URL, ACCOUNTS_URL, THEMES_URL
 from webbrowser import open_new_tab
+
+from bentodev.config.factory import (
+    AccountRequest,
+    RequestFactory,
+    ACCOUNT_URL,
+    ACCOUNTS_URL,
+    THEMES_URL
+)
+from bentodev.utils import github_account
+
 
 HOME_DIR = os.path.expanduser('~')
 BENTODEV_DIR = HOME_DIR + '/bentodev/'
