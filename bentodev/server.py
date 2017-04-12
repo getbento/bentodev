@@ -1,4 +1,9 @@
+import os
+import codecs
+import sass
 import jinja2.ext
+from jinja2 import Template
+from tempfile import mkdtemp
 
 from flask import Flask, render_template
 from inspect import getmembers, isfunction
@@ -20,20 +25,30 @@ ACCOUNT = str(environ['ACCOUNT'])
 HOME_DIR = path.expanduser('~')
 BENTODEV_DIR = HOME_DIR + '/bentodev/'
 
-REPO_DIR = '{}{}{}/'.format(BENTODEV_DIR, 'sites/', REPO)
-STATIC_DIR = BENTODEV_DIR + 'sites/{}/assets/'
-TEMPLATE_DIR = BENTODEV_DIR + 'sites/{}/templates/'
+REPO_DIR = '{}{}{}'.format(BENTODEV_DIR, 'sites/', REPO)
+STATIC_DIR = '{}{}'.format(REPO_DIR, '/assets/')
+TEMPLATE_DIR = '{}{}'.format(REPO_DIR, '/templates/')
+SCSS_DIR = '{}{}'.format(REPO_DIR, '/assets/scss/')
+BUILD_DIR = '{}{}'.format(REPO_DIR, '/assets/build/')
+
+CURRENT_CONTEXT_DATA = None
+
+whitelisted_extensions = ['.scss', '.css', '.sass']
 
 
 def create_app():
     app = Flask(__name__)
-    app.template_folder = TEMPLATE_DIR.format(REPO)
-    app.static_folder = STATIC_DIR.format(REPO)
+    app.static_folder = STATIC_DIR
     app.debug = True
+
+    loader = jinja2.ChoiceLoader([
+        app.jinja_loader,
+        jinja2.FileSystemLoader([TEMPLATE_DIR, SCSS_DIR]),
+    ])
+    app.jinja_loader = loader
 
     app.jinja_env.autoescape = False
     app.jinja_env.undefined = SilentUndefined
-
     app.jinja_env.add_extension(CsrfExtension)
     app.jinja_env.add_extension(StaticFilesExtension)
     app.jinja_env.add_extension(ScssUrlExtension)
@@ -68,17 +83,50 @@ def handle_request(path):
     print('REQUEST: ' + r.url)
     try:
         r.get()
+        global CURRENT_CONTEXT_DATA
+        CURRENT_CONTEXT_DATA = r.json()
         return r.json()
     except Exception as e:
         print(e)
         raise SystemExit
 
 
+def compile_scss(path):
+    for root, dirs, files in os.walk(SCSS_DIR):
+        new_path = root.replace(SCSS_DIR, BUILD_DIR)
+        if not os.path.isdir(new_path):
+            os.makedirs(new_path)
+        # path = root.split(os.sep)
+        # print((len(path) - 1) * '---', os.path.basename(root))
+        for file in files:
+            name, extension = os.path.splitext(file)
+            if extension not in whitelisted_extensions:
+                continue
+            with codecs.open(os.path.join(root, file), 'r', 'utf-8') as source_file:
+                source = source_file.read()
+            with codecs.open(os.path.join(new_path, file), 'w+', 'utf-8') as outfile:
+                try:
+                    filepath = "{}/{}".format(root.replace(SCSS_DIR, ''), file)
+                    template = app.jinja_env.get_template(filepath)
+                    outfile.write(template.render(**CURRENT_CONTEXT_DATA))
+                except Exception as e:
+                    print('Error: ' + str(e))
+
+    file_path = "{}{}".format(BUILD_DIR, path.split('/')[-1])
+    print(file_path)
+    with codecs.open(file_path, 'r', 'utf-8') as file:
+        scss = file.read()
+
+    return sass.compile(string=scss, include_paths=[BUILD_DIR], output_style='nested')
+
+
 @app.route('/assets/<path:path>')
 def static_file(path):
-    if 'scss' in path:
-        print(path)
-    return app.send_static_file(path)
+    print('REQUEST: ' + path)
+    if '.scss' in path:
+        return compile_scss(path)
+    else:
+        return app.send_static_file(path)
 
 
 @app.route('/', defaults={'path': ''})
@@ -87,10 +135,10 @@ def path_router(path):
     context_data = handle_request(path)
     try:
         template = context_data['current']['template']
+        print("TEMPLATE: " + template)
         return render_template(template, **context_data)
     except Exception as e:
-        print(e)
-        raise SystemExit
+        print("Error: " + str(e))
 
 
 if __name__ == "__main__":
