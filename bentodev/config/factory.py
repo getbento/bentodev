@@ -13,7 +13,7 @@ ACCOUNTS_URL = '{}{}{}'.format(
 GITHUB_ACCOUNT_URL = '{}{}{}'.format(
     PROTOCOL, BENTOBOX_LOCAL_URL, 'api/github_account/')
 THEMES_URL = '{}{}{}'.format(
-    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/themes/')
+    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/themes')
 TOKEN_URL = '{}{}{}'.format(
     PROTOCOL, BENTOBOX_LOCAL_URL, 'api/api-token-auth/')
 VERIFY_URL = '{}{}{}'.format(

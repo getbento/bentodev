@@ -2,10 +2,9 @@ import os
 import codecs
 import sass
 import jinja2.ext
-from jinja2 import Template
 from tempfile import mkdtemp
 
-from flask import Flask, render_template
+from flask import Flask, render_template, make_response
 from inspect import getmembers, isfunction
 from os import path, environ
 from sassutils.wsgi import SassMiddleware
@@ -96,14 +95,10 @@ def compile_scss(path):
         new_path = root.replace(SCSS_DIR, BUILD_DIR)
         if not os.path.isdir(new_path):
             os.makedirs(new_path)
-        # path = root.split(os.sep)
-        # print((len(path) - 1) * '---', os.path.basename(root))
         for file in files:
             name, extension = os.path.splitext(file)
             if extension not in whitelisted_extensions:
                 continue
-            with codecs.open(os.path.join(root, file), 'r', 'utf-8') as source_file:
-                source = source_file.read()
             with codecs.open(os.path.join(new_path, file), 'w+', 'utf-8') as outfile:
                 try:
                     filepath = "{}/{}".format(root.replace(SCSS_DIR, ''), file)
@@ -113,7 +108,7 @@ def compile_scss(path):
                     print('Error: ' + str(e))
 
     file_path = "{}{}".format(BUILD_DIR, path.split('/')[-1])
-    print(file_path)
+
     with codecs.open(file_path, 'r', 'utf-8') as file:
         scss = file.read()
 
@@ -124,7 +119,10 @@ def compile_scss(path):
 def static_file(path):
     print('REQUEST: ' + path)
     if '.scss' in path:
-        return compile_scss(path)
+        scss = compile_scss(path)
+        response = make_response(scss)
+        response.headers['Content-Type'] = 'text/css'
+        return response
     else:
         return app.send_static_file(path)
 

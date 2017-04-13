@@ -36,7 +36,7 @@ def get_theme(token, account):
     r.get()
     if r.request.ok and r.json():
         theme_pk = r.json()[0]['theme']
-        r.url = '{}{}'.format(THEMES_URL, theme_pk)
+        r.url = '{}/{}'.format(THEMES_URL, theme_pk)
         print(r.url)
         r.get()
         if r.request.ok and r.json():
