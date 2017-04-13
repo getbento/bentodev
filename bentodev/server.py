@@ -4,7 +4,7 @@ import sass
 import jinja2.ext
 from tempfile import mkdtemp
 
-from flask import Flask, render_template, make_response
+from flask import Flask, render_template, make_response, abort
 from inspect import getmembers, isfunction
 from os import path, environ
 from sassutils.wsgi import SassMiddleware
@@ -87,7 +87,7 @@ def handle_request(path):
         return r.json()
     except Exception as e:
         print(e)
-        raise SystemExit
+        abort(404)
 
 
 def compile_scss(path):
@@ -118,15 +118,19 @@ def compile_scss(path):
 @app.route('/assets/<path:path>')
 def static_file(path):
     print('REQUEST: ' + path)
-    if '.scss' in path:
-        scss = compile_scss(path)
-        response = make_response(scss)
-        response.headers['Content-Type'] = 'text/css'
+    response = None
+    try:
+        if '.scss' in path:
+            scss = compile_scss(path)
+            response = make_response(scss)
+            response.headers['Content-Type'] = 'text/css'
+        else:
+            response = app.send_static_file(path)
+            response.headers.add('Access-Control-Allow-Origin', '*')
         return response
-    else:
-        response = app.send_static_file(path)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+    except Exception as e:
+        print(e)
+        abort(404)
 
 
 @app.route('/', defaults={'path': ''})

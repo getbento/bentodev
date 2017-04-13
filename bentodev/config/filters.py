@@ -11,6 +11,14 @@ from money import Money
 from .image_utils import generate_resize_url, get_raw_image_url
 
 
+def linebreaksbr(value):
+    """
+    Convert all newlines in a piece of plain text to HTML line breaks
+    (``<br />``).
+    """
+    return value.replace('\n', '<br />')
+
+
 def datetime(value, format='%d-%m-%Y %H:%M'):
     if not value:
         return value
