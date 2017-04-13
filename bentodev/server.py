@@ -124,7 +124,9 @@ def static_file(path):
         response.headers['Content-Type'] = 'text/css'
         return response
     else:
-        return app.send_static_file(path)
+        response = app.send_static_file(path)
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
 
 
 @app.route('/', defaults={'path': ''})
@@ -134,7 +136,9 @@ def path_router(path):
     try:
         template = context_data['current']['template']
         print("TEMPLATE: " + template)
-        return render_template(template, **context_data)
+        response = make_response(render_template(template, **context_data))
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
     except Exception as e:
         print("Error: " + str(e))
 
