@@ -9,15 +9,15 @@ BENTOBOX_LOCAL_URL = 'localtest.me:8000/'
 ACCOUNT_URL = '{}{}'.format(
     BENTOBOX_LOCAL_URL, 'api/account')
 ACCOUNTS_URL = '{}{}{}'.format(
-    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/accounts')
+    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/accounts')
 GITHUB_ACCOUNT_URL = '{}{}{}'.format(
-    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/github_account/')
+    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/github_account/')
 THEMES_URL = '{}{}{}'.format(
-    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/themes')
+    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/themes')
 TOKEN_URL = '{}{}{}'.format(
-    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/api-token-auth/')
+    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/api-token-auth/')
 VERIFY_URL = '{}{}{}'.format(
-    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/api-token-verify/')
+    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/api-token-verify/')
 
 
 def error(self):
