@@ -35,6 +35,11 @@ def account_url_builder(account):
     return '{}{}.{}'.format(PROTOCOL, account, ACCOUNT_URL)
 
 
+def form_url_build(account, path):
+    return '{}{}.{}{}'.format(
+        PROTOCOL, account, BENTOBOX_LOCAL_URL, path)
+
+
 class RequestFactory():
 
     def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
@@ -112,4 +117,16 @@ class AccountRequest(RequestFactory):
         super(AccountRequest, self).__init__(
             url=account_url_builder(account=kwargs['account']),
             token=token
+        )
+
+
+class FormToEmailRequest(RequestFactory):
+    def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
+        super(FormToEmailRequest, self).__init__(
+            url=form_url_build(account=kwargs['account'], path=kwargs['path']),
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data=data,
         )

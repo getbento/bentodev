@@ -1,10 +1,10 @@
 import os
 import codecs
+
 import sass
 import jinja2.ext
-from tempfile import mkdtemp
 
-from flask import Flask, render_template, make_response, abort
+from flask import Flask, render_template, make_response, abort, request, json
 from inspect import getmembers, isfunction
 from os import path, environ
 from sassutils.wsgi import SassMiddleware
@@ -16,7 +16,8 @@ from bentodev.config.environment import (
     SilentUndefined,
     StaticFilesExtension,
 )
-from bentodev.config.factory import HelpDataRequest
+from bentodev.config.factory import HelpDataRequest, FormToEmailRequest
+
 
 REPO = str(environ['REPO'])
 ACCOUNT = str(environ['ACCOUNT'])
@@ -116,7 +117,7 @@ def compile_scss(path):
 
 
 @app.route('/assets/<path:path>')
-def static_file(path):
+def static_file_router(path):
     print('REQUEST: ' + path)
     response = None
     try:
@@ -133,9 +134,28 @@ def static_file(path):
         abort(404)
 
 
+@app.route('/form_to_email/', methods=['POST'])
+@app.route('/form/<path:path>', methods=['POST'])
+def form_to_email_router():
+    resource_url = request.url
+    resource_url = resource_url.replace(request.url_root, '')
+
+    kwargs = {
+        'account': ACCOUNT,
+        'path': resource_url,
+    }
+
+    data = {k: v for k, v in request.form.to_dict().items() if v != ''}
+
+    new_request = FormToEmailRequest(data=data, **kwargs)
+    new_request.post()
+    return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def path_router(path):
+    print('REQUEST: ' + path)
     context_data = handle_request(path)
     try:
         template = context_data['current']['template']
