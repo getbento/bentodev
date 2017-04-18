@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 # -*- coding: utf-8 -*-
 import random
 import json
@@ -9,6 +10,7 @@ from dateutil import parser
 from money import Money
 
 from .image_utils import generate_resize_url, get_raw_image_url
+from slugify import slugify as slugify_external
 
 
 def linebreaksbr(value):
@@ -195,3 +197,7 @@ def normalize_internal_url(url):
     # pages you're on
 
     return '/%s/' % url
+
+
+def slugify(value):
+    return slugify_external(value)
