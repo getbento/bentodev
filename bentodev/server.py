@@ -145,9 +145,7 @@ def form_to_email_router():
         'path': resource_url,
     }
 
-    data = {k: v for k, v in request.form.to_dict().items() if v != ''}
-
-    new_request = FormToEmailRequest(data=data, **kwargs)
+    new_request = FormToEmailRequest(data=request.form.to_dict(), **kwargs)
     new_request.post()
     return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
 

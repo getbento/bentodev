@@ -130,3 +130,12 @@ class FormToEmailRequest(RequestFactory):
             },
             data=data,
         )
+
+    def post(self):
+        """" Make a post request """
+        self.request = requests.post(
+            self.url,
+            data=self.data,
+            headers=self.headers
+        )
+        error(self)
