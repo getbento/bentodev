@@ -120,9 +120,9 @@ class AccountRequest(RequestFactory):
         )
 
 
-class FormToEmailRequest(RequestFactory):
+class GenericFormRequest(RequestFactory):
     def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
-        super(FormToEmailRequest, self).__init__(
+        super(GenericFormRequest, self).__init__(
             url=form_url_build(account=kwargs['account'], path=kwargs['path']),
             headers={
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',

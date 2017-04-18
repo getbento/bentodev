@@ -16,7 +16,7 @@ from bentodev.config.environment import (
     SilentUndefined,
     StaticFilesExtension,
 )
-from bentodev.config.factory import HelpDataRequest, FormToEmailRequest
+from bentodev.config.factory import HelpDataRequest, GenericFormRequest
 
 
 REPO = str(environ['REPO'])
@@ -135,7 +135,6 @@ def static_file_router(path):
 
 
 @app.route('/form_to_email/', methods=['POST'])
-@app.route('/form/<path:path>', methods=['POST'])
 def form_to_email_router():
     resource_url = request.url
     resource_url = resource_url.replace(request.url_root, '')
@@ -145,7 +144,19 @@ def form_to_email_router():
         'path': resource_url,
     }
 
-    new_request = FormToEmailRequest(data=request.form.to_dict(), **kwargs)
+    new_request = GenericFormRequest(data=request.form.to_dict(), **kwargs)
+    new_request.post()
+    return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+
+
+@app.route('/forms/<path:path>', methods=['POST'])
+def generic_form_router(path):
+    kwargs = {
+        'account': ACCOUNT,
+        'path': '{}{}'.format('forms/', path),
+    }
+
+    new_request = GenericFormRequest(data=request.form.to_dict(), **kwargs)
     new_request.post()
     return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
 
