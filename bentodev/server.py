@@ -1,10 +1,11 @@
 import os
 import codecs
+import re
 
 import sass
 import jinja2.ext
 
-from flask import Flask, render_template, make_response, abort, request, json, redirect
+from flask import Flask, render_template, make_response, abort, request, json, redirect, url_for, Response
 from inspect import getmembers, isfunction
 from os import path, environ
 from sassutils.wsgi import SassMiddleware
@@ -93,14 +94,13 @@ def handle_request(path):
 
     request = HelpDataRequest(cookies=cookies, **kwargs)
     print('REQUEST: ' + request.url)
-    try:
-        request.get()
-
+    request.get()
+    if request.json():
         CURRENT_CONTEXT_DATA = request.json()
         return request.json()
-    except Exception as e:
-        print(e)
-        abort(404)
+    else:
+        print("No Context Data Returned")
+        return None
 
 
 def set_cookies(cookies):
@@ -199,11 +199,54 @@ def generic_form_router(path):
 
 @app.route('/store/<path:path>', methods=['POST'])
 def generic_store_router(path):
+    CART_ITEM_UPDATE_URL = 'store/' + path
+    args = re.split(r'{}'.format(CART_ITEM_UPDATE_URL), request.url)[-1]
+    path = '{}{}'.format(CART_ITEM_UPDATE_URL, args)
+
     get_cookies(path)
 
     kwargs = {
         'account': ACCOUNT,
-        'path': '{}{}'.format('store/', path),
+        'path': path,
+        'csrf_token': CURRENT_CSRF_TOKEN
+    }
+
+    cookies = {
+        'csrftoken': CURRENT_CSRF_TOKEN,
+        'csrfmiddlewaretoken': CURRENT_CSRF_TOKEN,
+        'sessionid': CURRENT_SESSION_ID
+    }
+
+    data = request.form.to_dict()
+
+    new_request = None
+    if 'X-Requested-With' in request.headers:
+        print('post x requestx')
+        new_request = AjaxFormRequest(data=data, cookies=cookies, **kwargs)
+        new_request.post()
+        print('session: ' + str(CURRENT_SESSION_ID))
+        if 'Set-Cookie' in new_request.request.headers:
+            set_cookies(new_request.request.cookies)
+            print('session: ' + CURRENT_SESSION_ID)
+        return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+    else:
+        data.update(cookies)
+        new_request = GenericFormRequest(data=data, cookies=cookies, **kwargs)
+        new_request.post()
+        if 'Set-Cookie' in new_request.request.headers:
+            set_cookies(new_request.request.cookies)
+        return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+
+
+@app.route('/store/cart/update/<path:path>', methods=['GET'])
+def cart_item_router(path):
+    CART_ITEM_UPDATE_URL = 'store/cart/update/'
+    args = re.split(r'{}'.format(CART_ITEM_UPDATE_URL), request.url)[-1]
+    path = '{}{}'.format(CART_ITEM_UPDATE_URL, args)
+
+    kwargs = {
+        'account': ACCOUNT,
+        'path': path,
         'csrf_token': CURRENT_CSRF_TOKEN
     }
 
@@ -218,30 +261,35 @@ def generic_store_router(path):
     new_request = None
     if 'X-Requested-With' in request.headers:
         new_request = AjaxFormRequest(data=data, cookies=cookies, **kwargs)
-        new_request.post()
+        new_request.get()
         return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
     else:
         data.update(cookies)
         new_request = GenericFormRequest(data=data, cookies=cookies, **kwargs)
-        new_request.post()
-        if 'Set-Cookie' in new_request.request.headers:
-            set_cookies(new_request.request.cookies)
+        new_request.get()
         return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
 
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def path_router(path):
+    print('PATH: ' + path)
+
     context_data = handle_request(path)
+
+    if not context_data:
+        return redirect('http://127.0.0.1:5000/', 301)
+
     get_cookies(path)
-    try:
+    if 'template' in context_data['current']:
         template = context_data['current']['template']
         print("TEMPLATE: " + template)
         response = make_response(render_template(template, **context_data))
         response.headers.add('Access-Control-Allow-Origin', '*')
         return response
-    except Exception as e:
-        print("Error: " + str(e))
+    else:
+        print("No template defined in request.")
+        return abort(404)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
 import requests
 import json
+from json.decoder import JSONDecodeError
+
 
 PROTOCOL = 'http://'
 SECURE_PROTOCOL = 'https://'
@@ -40,7 +42,8 @@ def form_url_build(account, path):
 
 
 def store_token_url_build(account, path):
-    return '{}{}.{}{}{}'.format(PROTOCOL, account, BENTOBOX_LOCAL_URL, 'store/', path)
+    # return '{}{}.{}{}{}'.format(PROTOCOL, account, BENTOBOX_LOCAL_URL, 'store/', path)
+    return '{}{}.{}{}'.format(PROTOCOL, account, BENTOBOX_LOCAL_URL, path)
 
 
 class RequestFactory():
@@ -84,7 +87,10 @@ class RequestFactory():
         error(self)
 
     def json(self):
-        return self.request.json()
+        try:
+            return self.request.json()
+        except JSONDecodeError:
+            return None
 
 
 class TokenRequest(RequestFactory):
@@ -171,6 +177,18 @@ class GenericFormRequest(RequestFactory):
             },
             data=data,
             cookies=cookies,
+        )
+
+
+    def get(self):
+        print(self.url)
+        """" Make a post request """
+        self.request = requests.get(
+            self.url,
+            data=self.data,
+            headers=self.headers,
+            cookies=self.cookies,
+            allow_redirects=False,
         )
 
     def post(self):
