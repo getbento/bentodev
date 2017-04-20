@@ -4,7 +4,7 @@ import codecs
 import sass
 import jinja2.ext
 
-from flask import Flask, render_template, make_response, abort, request, json
+from flask import Flask, render_template, make_response, abort, request, json, redirect
 from inspect import getmembers, isfunction
 from os import path, environ
 from sassutils.wsgi import SassMiddleware
@@ -16,7 +16,7 @@ from bentodev.config.environment import (
     SilentUndefined,
     StaticFilesExtension,
 )
-from bentodev.config.factory import HelpDataRequest, GenericFormRequest
+from bentodev.config.factory import HelpDataRequest, GenericFormRequest, CookieRequest, AjaxFormRequest
 
 
 REPO = str(environ['REPO'])
@@ -32,6 +32,8 @@ SCSS_DIR = '{}{}'.format(REPO_DIR, '/assets/scss/')
 BUILD_DIR = '{}{}'.format(REPO_DIR, '/assets/build/')
 
 CURRENT_CONTEXT_DATA = None
+CURRENT_CSRF_TOKEN = None
+CURRENT_SESSION_ID = None
 
 whitelisted_extensions = ['.scss', '.css', '.sass']
 
@@ -74,21 +76,54 @@ app = create_app()
 
 
 def handle_request(path):
+    global CURRENT_CONTEXT_DATA
+    global CURRENT_CSRF_TOKEN
+
     kwargs = {
         'account': ACCOUNT,
         'path': path,
         'help': True,
     }
-    r = HelpDataRequest(**kwargs)
-    print('REQUEST: ' + r.url)
+
+    cookies = {
+        'csrftoken': CURRENT_CSRF_TOKEN,
+        'sessionid': CURRENT_SESSION_ID
+    }
+
+    request = HelpDataRequest(cookies=cookies, **kwargs)
+    print('REQUEST: ' + request.url)
     try:
-        r.get()
-        global CURRENT_CONTEXT_DATA
-        CURRENT_CONTEXT_DATA = r.json()
-        return r.json()
+        request.get()
+
+        CURRENT_CONTEXT_DATA = request.json()
+        return request.json()
     except Exception as e:
         print(e)
         abort(404)
+
+
+def set_cookies(cookies):
+    if 'csrftoken' in cookies:
+        global CURRENT_CSRF_TOKEN
+        if not CURRENT_CSRF_TOKEN or (CURRENT_CSRF_TOKEN != cookies['csrftoken']):
+            CURRENT_CSRF_TOKEN = cookies['csrftoken']
+
+    if 'sessionid' in cookies:
+        global CURRENT_SESSION_ID
+        if not CURRENT_SESSION_ID or (CURRENT_SESSION_ID != cookies['sessionid']):
+            CURRENT_SESSION_ID = cookies['sessionid']
+
+
+def get_cookies(path):
+    kwargs = {
+        'account': ACCOUNT,
+        'path': path,
+        'help': True,
+    }
+    request = CookieRequest(**kwargs)
+    request.get()
+    if 'Set-Cookie' in request.request.headers:
+        set_cookies(request.request.cookies)
 
 
 def compile_scss(path):
@@ -146,6 +181,7 @@ def form_to_email_router():
 
     new_request = GenericFormRequest(data=request.form.to_dict(), **kwargs)
     new_request.post()
+    print(new_request.request.cookies['sessionid'])
     return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
 
 
@@ -155,17 +191,52 @@ def generic_form_router(path):
         'account': ACCOUNT,
         'path': '{}{}'.format('forms/', path),
     }
-
     new_request = GenericFormRequest(data=request.form.to_dict(), **kwargs)
     new_request.post()
+    print(new_request.request.headers)
     return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+
+
+@app.route('/store/<path:path>', methods=['POST'])
+def generic_store_router(path):
+    get_cookies(path)
+
+    kwargs = {
+        'account': ACCOUNT,
+        'path': '{}{}'.format('store/', path),
+        'csrf_token': CURRENT_CSRF_TOKEN
+    }
+
+    cookies = {
+        'csrftoken': CURRENT_CSRF_TOKEN,
+        'csrfmiddlewaretoken': CURRENT_CSRF_TOKEN,
+        'sessionid': CURRENT_SESSION_ID
+    }
+
+    data = request.form.to_dict()
+
+    new_request = None
+    if 'X-Requested-With' in request.headers:
+        new_request = AjaxFormRequest(data=data, cookies=cookies, **kwargs)
+        new_request.post()
+        return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+    else:
+        data.update(cookies)
+        new_request = GenericFormRequest(data=data, cookies=cookies, **kwargs)
+        new_request.post()
+        if 'Set-Cookie' in new_request.request.headers:
+            set_cookies(new_request.request.cookies)
+        # if redirect url in new_request
+        # return redirect(value)
+        # else return a response with the requests data
+        return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
 
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def path_router(path):
-    print('REQUEST: ' + path)
     context_data = handle_request(path)
+    get_cookies(path)
     try:
         template = context_data['current']['template']
         print("TEMPLATE: " + template)

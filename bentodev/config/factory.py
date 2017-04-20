@@ -26,9 +26,8 @@ def error(self):
         print(self.request.status_code)
 
 
-def context_url_build(account, path='', help=''):
-    help = '?help'
-    return '{}{}.{}{}{}'.format(PROTOCOL, account, BENTOBOX_LOCAL_URL, path, help)
+def context_url_build(account, path=''):
+    return '{}{}.{}{}{}'.format(PROTOCOL, account, BENTOBOX_LOCAL_URL, path, '?help')
 
 
 def account_url_builder(account):
@@ -40,9 +39,13 @@ def form_url_build(account, path):
         PROTOCOL, account, BENTOBOX_LOCAL_URL, path)
 
 
+def store_token_url_build(account, path):
+    return '{}{}.{}{}{}'.format(PROTOCOL, account, BENTOBOX_LOCAL_URL, 'store/', path)
+
+
 class RequestFactory():
 
-    def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
+    def __init__(self, url=None, headers=None, data=None, token=None, cookies=None, *args, **kwargs):
         """" Initialize a request """
         self.url = url
         self.headers = {
@@ -55,6 +58,9 @@ class RequestFactory():
         self.data = {}
         if data:
             self.data.update(data)
+        self.cookies = {}
+        if cookies:
+            self.cookies.update(cookies)
         self.request = None
 
     def get(self):
@@ -62,7 +68,8 @@ class RequestFactory():
         self.request = requests.get(
             self.url,
             data=json.dumps(self.data),
-            headers=self.headers
+            headers=self.headers,
+            cookies=self.cookies
         )
         error(self)
 
@@ -71,7 +78,8 @@ class RequestFactory():
         self.request = requests.post(
             self.url,
             data=json.dumps(self.data),
-            headers=self.headers
+            headers=self.headers,
+            cookies=self.cookies
         )
         error(self)
 
@@ -105,11 +113,21 @@ class GitHubAccountRequest(RequestFactory):
 
 
 class HelpDataRequest(RequestFactory):
-    def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
+    def __init__(self, url=None, headers=None, data=None, token=None, cookies=None, *args, **kwargs):
         super(HelpDataRequest, self).__init__(
-            url=context_url_build(account=kwargs['account'], path=kwargs['path'], help=True),
-            headers={'X-Requested-With': 'XMLHttpRequest'}
+            url=context_url_build(account=kwargs['account'], path=kwargs['path']),
+            headers={'X-Requested-With': 'XMLHttpRequest'},
+            cookies=cookies
         )
+
+
+class CookieRequest(RequestFactory):
+    def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
+        url = store_token_url_build(account=kwargs['account'], path=kwargs['path'])
+        super(CookieRequest, self).__init__(
+            url=url
+        )
+        del self.headers['Content-Type']
 
 
 class AccountRequest(RequestFactory):
@@ -120,15 +138,17 @@ class AccountRequest(RequestFactory):
         )
 
 
-class GenericFormRequest(RequestFactory):
-    def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
-        super(GenericFormRequest, self).__init__(
+class AjaxFormRequest(RequestFactory):
+    def __init__(self, url=None, headers=None, data=None, token=None,  cookies=None, *args, **kwargs):
+        super(AjaxFormRequest, self).__init__(
             url=form_url_build(account=kwargs['account'], path=kwargs['path']),
             headers={
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': kwargs['csrf_token']
             },
             data=data,
+            cookies=cookies,
         )
 
     def post(self):
@@ -136,6 +156,30 @@ class GenericFormRequest(RequestFactory):
         self.request = requests.post(
             self.url,
             data=self.data,
-            headers=self.headers
+            headers=self.headers,
+            cookies=self.cookies,
+        )
+        error(self)
+
+
+class GenericFormRequest(RequestFactory):
+    def __init__(self, url=None, headers=None, data=None, token=None,  cookies=None, *args, **kwargs):
+        super(GenericFormRequest, self).__init__(
+            url=form_url_build(account=kwargs['account'], path=kwargs['path']),
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            },
+            data=data,
+            cookies=cookies,
+        )
+
+    def post(self):
+        """" Make a post request """
+        self.request = requests.post(
+            self.url,
+            data=self.data,
+            headers=self.headers,
+            cookies=self.cookies,
+            allow_redirects=False,
         )
         error(self)
