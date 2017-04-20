@@ -87,6 +87,7 @@ def handle_request(path):
 
     cookies = {
         'csrftoken': CURRENT_CSRF_TOKEN,
+        'csrfmiddlewaretoken': CURRENT_CSRF_TOKEN,
         'sessionid': CURRENT_SESSION_ID
     }
 
@@ -177,11 +178,11 @@ def form_to_email_router():
     kwargs = {
         'account': ACCOUNT,
         'path': resource_url,
+        'csrf_token': CURRENT_CSRF_TOKEN
     }
 
-    new_request = GenericFormRequest(data=request.form.to_dict(), **kwargs)
+    new_request = AjaxFormRequest(data=request.form.to_dict(), **kwargs)
     new_request.post()
-    print(new_request.request.cookies['sessionid'])
     return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
 
 
@@ -193,7 +194,6 @@ def generic_form_router(path):
     }
     new_request = GenericFormRequest(data=request.form.to_dict(), **kwargs)
     new_request.post()
-    print(new_request.request.headers)
     return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
 
 
@@ -226,9 +226,6 @@ def generic_store_router(path):
         new_request.post()
         if 'Set-Cookie' in new_request.request.headers:
             set_cookies(new_request.request.cookies)
-        # if redirect url in new_request
-        # return redirect(value)
-        # else return a response with the requests data
         return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
 
 
