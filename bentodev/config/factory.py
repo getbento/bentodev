@@ -14,13 +14,15 @@ ACCOUNT_URL = '{}{}'.format(
 ACCOUNTS_URL = '{}{}{}'.format(
     PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/accounts')
 GITHUB_ACCOUNT_URL = '{}{}{}'.format(
-    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/github_account/')
+    PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/github-account/')
 THEMES_URL = '{}{}{}'.format(
     PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/themes')
 TOKEN_URL = '{}{}{}'.format(
     PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/api-token-auth/')
 VERIFY_URL = '{}{}{}'.format(
     PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/api-token-verify/')
+CSRF_TOKEN_URL = '{}{}{}'.format(
+        PROTOCOL, BENTOBOX_LOCAL_URL, 'api/developers/csrf-token/')
 
 
 def error(self):
@@ -138,9 +140,8 @@ class HelpDataRequest(RequestFactory):
 
 class CookieRequest(RequestFactory):
     def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
-        url = store_token_url_build(account=kwargs['account'], path=kwargs['path'])
         super(CookieRequest, self).__init__(
-            url=url
+            url=CSRF_TOKEN_URL
         )
         del self.headers['Content-Type']
 
