@@ -115,7 +115,7 @@ def set_cookies(cookies):
             CURRENT_SESSION_ID = cookies['sessionid']
 
 
-def get_cookies():
+def get_csrf_token():
     request = CookieRequest()
     request.get()
     if 'Set-Cookie' in request.request.headers:
@@ -198,7 +198,7 @@ def generic_store_router(path):
     args = re.split(r'{}'.format(CART_ITEM_UPDATE_URL), request.url)[-1]
     path = '{}{}'.format(CART_ITEM_UPDATE_URL, args)
 
-    get_cookies()
+    get_csrf_token()
 
     kwargs = {
         'account': ACCOUNT,
@@ -276,7 +276,7 @@ def path_router(path):
         print("NO CONTEXT DATA?")
         return redirect('http://127.0.0.1:5000/', 302)
 
-    get_cookies()
+    get_csrf_token()
     if 'template' in context_data['current']:
         template = context_data['current']['template']
         print("TEMPLATE: " + template)
