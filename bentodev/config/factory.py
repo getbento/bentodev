@@ -1,4 +1,5 @@
 import requests
+from requests.exceptions import ConnectionError, Timeout
 import json
 from json.decoder import JSONDecodeError
 
@@ -68,22 +69,30 @@ class RequestFactory():
 
     def get(self):
         """" Make a get request """
-        self.request = requests.get(
-            self.url,
-            data=json.dumps(self.data),
-            headers=self.headers,
-            cookies=self.cookies
-        )
+        try:
+            self.request = requests.get(
+                self.url,
+                data=json.dumps(self.data),
+                headers=self.headers,
+                cookies=self.cookies
+            )
+        except (ConnectionError, Timeout):
+            print("Cannot connect to BentoBox. Check network connection.")
+            exit()
         error(self)
 
     def post(self):
         """" Make a post request """
-        self.request = requests.post(
-            self.url,
-            data=json.dumps(self.data),
-            headers=self.headers,
-            cookies=self.cookies
-        )
+        try:
+            self.request = requests.post(
+                self.url,
+                data=json.dumps(self.data),
+                headers=self.headers,
+                cookies=self.cookies
+            )
+        except (ConnectionError, Timeout):
+            print("Cannot connect to BentoBox. Check network connection.")
+            exit()
         error(self)
 
     def json(self):
