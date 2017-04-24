@@ -7,6 +7,7 @@ from webbrowser import open_new_tab
 
 from bentodev.config.factory import (
     AccountRequest,
+    SessionFactory,
     RequestFactory,
     ACCOUNT_URL,
     ACCOUNTS_URL,
@@ -32,16 +33,16 @@ def get_theme(token, account):
         'account': account,
         'help': True,
     }
-    r = AccountRequest(url=ACCOUNT_URL, token=token, **kwargs)
+    r = AccountRequest(token=token, **kwargs)
     r.get()
     if r.request.ok and r.json():
         theme_pk = r.json()[0]['theme']
-        r.url = '{}/{}'.format(THEMES_URL, theme_pk)
-        print(r.url)
-        r.get()
-        if r.request.ok and r.json():
-            # r.get()
-            return r.json()['slug']
+        url = '{}/{}'.format(THEMES_URL, theme_pk)
+        s = SessionFactory(url=url, token=token)
+        s.get()
+        s.get()
+        if s.request.ok and s.json():
+            return s.json()['slug']
 
 
 def get_cloned_themes():
@@ -56,7 +57,8 @@ def list_available_repos():
 
 def list_accounts(token, flag=None):
     if github_account(token):
-        r = RequestFactory(url=ACCOUNTS_URL, token=token)
+        r = SessionFactory(url=ACCOUNTS_URL, token=token)
+        r.get()
         r.get()
         if r.request.ok and r.json():
             print('{0: <{2}} | {1: <{2}}'.format('Account', 'Theme', WIDTH))
@@ -82,12 +84,13 @@ def run_flask(account, repo):
     os.environ['ACCOUNT'] = account
     os.environ['REPO'] = repo
     os.environ['FLASK_APP'] = dir + '/server.py'
-    os.system("flask run")
+    os.system("flask run -h 0.0.0.0 --debugger")
 
 
 def clone_repo(token, slug):
     if github_account(token):
-        r = RequestFactory(url=THEMES_URL, token=token)
+        r = SessionFactory(url=THEMES_URL, token=token)
+        r.get()
         r.get()
 
         if r.json():

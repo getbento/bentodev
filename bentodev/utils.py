@@ -58,18 +58,19 @@ def token_auth():
     user = check_user(verbose=False)
     print('Enter Password for BentoBox User: %s' % user)
     pw = getpass(prompt="Password: ")
-    r = TokenRequest(data={'email': user, 'password': pw})
+    data = {'email': user, 'password': pw}
+    r = TokenRequest(data=data)
     r.post()
     del pw
     token = ''
-    if r.json()['token']:
+    if 'token' in r.json():
         token = r.json()['token']
     if verify_token(token):
         return token
 
 
 def verify_token(token):
-    r = VerifyRequest(data={'token': token})
+    r = VerifyRequest(token, data={'token': token})
     r.post()
     if not r.request.ok:
         print('Token Expired')
@@ -108,7 +109,7 @@ def github_account(token, verbose=True):
             elif r.request.ok and not r.json():
                 print('You have not connected your GitHub!')
                 print('Opening BentoBox Admin to Connect GitHub Account!')
-                open_new_tab('http://seamores.localtest.me:8000/bentobox/developers/')
+                open_new_tab('https://seamores.getbento.com/bentobox/developers/')
                 print("Waiting. Have you connected your GitHub Account?")
                 complete_flag = input("Type 'yes' to continue, or 'no' to cancel: ")
                 if complete_flag != 'yes':

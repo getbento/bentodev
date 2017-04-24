@@ -42,12 +42,12 @@ whitelisted_extensions = ['.scss', '.css', '.sass']
 def create_app():
     app = Flask(__name__)
     app.static_folder = STATIC_DIR
-    app.debug = True
 
     loader = jinja2.ChoiceLoader([
         app.jinja_loader,
         jinja2.FileSystemLoader([TEMPLATE_DIR, SCSS_DIR]),
     ])
+
     app.jinja_loader = loader
 
     app.jinja_env.autoescape = False
@@ -170,6 +170,10 @@ def form_to_email_router():
     resource_url = request.url
     resource_url = resource_url.replace(request.url_root, '')
 
+    get_csrf_token()
+    print(resource_url)
+    print(CURRENT_CSRF_TOKEN)
+
     kwargs = {
         'account': ACCOUNT,
         'path': resource_url,
@@ -183,6 +187,9 @@ def form_to_email_router():
 
 @app.route('/forms/<path:path>', methods=['POST'])
 def generic_form_router(path):
+
+    get_csrf_token()
+
     kwargs = {
         'account': ACCOUNT,
         'path': '{}{}'.format('forms/', path),
@@ -200,10 +207,13 @@ def generic_store_router(path):
 
     get_csrf_token()
 
+    print(CURRENT_CSRF_TOKEN)
+
     kwargs = {
         'account': ACCOUNT,
         'path': path,
-        'csrf_token': CURRENT_CSRF_TOKEN
+        'csrf_token': CURRENT_CSRF_TOKEN,
+        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, CURRENT_CSRF_TOKEN)
     }
 
     cookies = {
@@ -215,22 +225,37 @@ def generic_store_router(path):
     data = request.form.to_dict()
 
     new_request = None
+
     if 'X-Requested-With' in request.headers:
-        print('post x requestx')
         new_request = AjaxFormRequest(data=data, cookies=cookies, **kwargs)
         new_request.post()
+
+        print(new_request.request.text)
+        print(new_request.request.headers)
+
         print('session: ' + str(CURRENT_SESSION_ID))
         if 'Set-Cookie' in new_request.request.headers:
             set_cookies(new_request.request.cookies)
             print('session: ' + CURRENT_SESSION_ID)
-        return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+
+        response = app.response_class(
+            response=json.dumps(new_request.request.json()),
+            status=200,
+            mimetype='application/json'
+        )
+
+        return response
     else:
         data.update(cookies)
         new_request = GenericFormRequest(data=data, cookies=cookies, **kwargs)
         new_request.post()
         if 'Set-Cookie' in new_request.request.headers:
             set_cookies(new_request.request.cookies)
-        return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+        response = app.response_class(
+            response=json.dumps(new_request.request.json()),
+            status=200,
+            mimetype='application/json'
+        )
 
 
 @app.route('/store/cart/update/<path:path>', methods=['GET'])
@@ -262,14 +287,21 @@ def cart_item_router(path):
         data.update(cookies)
         new_request = GenericFormRequest(data=data, cookies=cookies, **kwargs)
         new_request.get()
-        return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+        print(new_request.request)
+        # print(new_request.request)
+        response = app.response_class(
+            response=new_request.request.text,
+            status=200,
+            mimetype='text/html; charset=utf-8'
+        )
+        return response
+        # return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
 
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def path_router(path):
     print('PATH: ' + path)
-
     context_data = handle_request(path)
 
     if not context_data:
@@ -290,4 +322,4 @@ def path_router(path):
 
 if __name__ == "__main__":
     app = create_app()
-    app.run()
+    app.run(host="0.0.0.0", port=5000, debug=True)
