@@ -29,8 +29,9 @@ CSRF_TOKEN_URL = '{}{}{}'.format(
 
 def error(self):
     if not self.request.ok:
-        print('Error: ' + str(self.request.status_code))
-        print(self.request.text)
+        if not (self.request.status_code == 403 and self.request.text == '{"detail":"Authentication credentials were not provided."}'):
+            print('Error: ' + str(self.request.status_code))
+            print(self.request.text)
 
 
 def context_url_build(account, path=''):
@@ -233,6 +234,8 @@ class AccountRequest(SessionFactory):
 
 class AjaxFormRequest(RequestFactory):
     def __init__(self, url=None, headers=None, data=None, token=None,  cookies=None, *args, **kwargs):
+        for k, v in kwargs.items():
+            print(k + ': ' + v)
         super(AjaxFormRequest, self).__init__(
             url=form_url_build(account=kwargs['account'], path=kwargs['path']),
             headers={
@@ -262,6 +265,7 @@ class GenericFormRequest(RequestFactory):
             url=form_url_build(account=kwargs['account'], path=kwargs['path']),
             headers={
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'Referer': kwargs['referer']
             },
             data=data,
             cookies=cookies,

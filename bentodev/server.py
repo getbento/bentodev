@@ -171,18 +171,23 @@ def form_to_email_router():
     resource_url = resource_url.replace(request.url_root, '')
 
     get_csrf_token()
-    print(resource_url)
-    print(CURRENT_CSRF_TOKEN)
 
     kwargs = {
         'account': ACCOUNT,
         'path': resource_url,
-        'csrf_token': CURRENT_CSRF_TOKEN
+        'csrf_token': CURRENT_CSRF_TOKEN,
+        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, 'contact/')
     }
 
     new_request = AjaxFormRequest(data=request.form.to_dict(), **kwargs)
     new_request.post()
-    return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+
+    response = app.response_class(
+        response=json.dumps(new_request.request.json()),
+        status=new_request.request.status_code,
+        mimetype=new_request.request.headers['Content-Type']
+    )
+    return response
 
 
 @app.route('/forms/<path:path>', methods=['POST'])
@@ -196,24 +201,28 @@ def generic_form_router(path):
     }
     new_request = GenericFormRequest(data=request.form.to_dict(), **kwargs)
     new_request.post()
-    return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+
+    response = app.response_class(
+        response=json.dumps(new_request.request.json()),
+        status=new_request.request.status_code,
+        mimetype=new_request.request.headers['Content-Type']
+    )
+    return response
 
 
 @app.route('/store/<path:path>', methods=['POST'])
 def generic_store_router(path):
-    CART_ITEM_UPDATE_URL = 'store/' + path
-    args = re.split(r'{}'.format(CART_ITEM_UPDATE_URL), request.url)[-1]
-    path = '{}{}'.format(CART_ITEM_UPDATE_URL, args)
+    STORE_PATH_URL = 'store/' + path
+    args = re.split(r'{}'.format(STORE_PATH_URL), request.url)[-1]
+    path = '{}{}'.format(STORE_PATH_URL, args)
 
     get_csrf_token()
-
-    print(CURRENT_CSRF_TOKEN)
 
     kwargs = {
         'account': ACCOUNT,
         'path': path,
         'csrf_token': CURRENT_CSRF_TOKEN,
-        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, CURRENT_CSRF_TOKEN)
+        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, STORE_PATH_URL)
     }
 
     cookies = {
@@ -239,9 +248,9 @@ def generic_store_router(path):
             print('session: ' + CURRENT_SESSION_ID)
 
         response = app.response_class(
-            response=json.dumps(new_request.request.json()),
-            status=200,
-            mimetype='application/json'
+            response=new_request.request.text,
+            status=new_request.request.status_code,
+            mimetype=new_request.request.headers['Content-Type']
         )
 
         return response
@@ -251,11 +260,8 @@ def generic_store_router(path):
         new_request.post()
         if 'Set-Cookie' in new_request.request.headers:
             set_cookies(new_request.request.cookies)
-        response = app.response_class(
-            response=json.dumps(new_request.request.json()),
-            status=200,
-            mimetype='application/json'
-        )
+        if new_request.request.status_code:
+            return redirect('http://127.0.0.1:5000/store/cart', 302)
 
 
 @app.route('/store/cart/update/<path:path>', methods=['GET'])
@@ -267,7 +273,8 @@ def cart_item_router(path):
     kwargs = {
         'account': ACCOUNT,
         'path': path,
-        'csrf_token': CURRENT_CSRF_TOKEN
+        'csrf_token': CURRENT_CSRF_TOKEN,
+        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, 'store')
     }
 
     cookies = {
@@ -282,20 +289,16 @@ def cart_item_router(path):
     if 'X-Requested-With' in request.headers:
         new_request = AjaxFormRequest(data=data, cookies=cookies, **kwargs)
         new_request.get()
-        return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+        return app.response_class(
+            response=new_request.request.text,
+            status=new_request.request.status_code,
+            mimetype=new_request.request.headers['Content-Type']
+        )
     else:
         data.update(cookies)
         new_request = GenericFormRequest(data=data, cookies=cookies, **kwargs)
         new_request.get()
-        print(new_request.request)
-        # print(new_request.request)
-        response = app.response_class(
-            response=new_request.request.text,
-            status=200,
-            mimetype='text/html; charset=utf-8'
-        )
-        return response
-        # return (new_request.request.text, new_request.request.status_code, new_request.request.headers.items())
+        return redirect('http://127.0.0.1:5000/store/cart', 302)
 
 
 @app.route('/', defaults={'path': ''})
@@ -305,7 +308,6 @@ def path_router(path):
     context_data = handle_request(path)
 
     if not context_data:
-        print("NO CONTEXT DATA?")
         return redirect('http://127.0.0.1:5000/', 302)
 
     get_csrf_token()
