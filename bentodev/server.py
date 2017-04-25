@@ -1,15 +1,12 @@
-import os
 import codecs
+import os
 import re
-
 import sass
 import jinja2.ext
-
 from flask import Flask, render_template, make_response, abort, request, json, redirect, url_for, Response
 from inspect import getmembers, isfunction
 from os import path, environ
 from sassutils.wsgi import SassMiddleware
-
 from bentodev.config import filters
 from bentodev.config.environment import (
     CsrfExtension,
@@ -22,34 +19,28 @@ from bentodev.config.factory import HelpDataRequest, GenericFormRequest, CookieR
 
 REPO = str(environ['REPO'])
 ACCOUNT = str(environ['ACCOUNT'])
-
+ENVIRON = str(environ['ENVIRON'])
 HOME_DIR = path.expanduser('~')
 BENTODEV_DIR = HOME_DIR + '/bentodev/'
-
 REPO_DIR = '{}{}{}'.format(BENTODEV_DIR, 'sites/', REPO)
 STATIC_DIR = '{}{}'.format(REPO_DIR, '/assets/')
 TEMPLATE_DIR = '{}{}'.format(REPO_DIR, '/templates/')
 SCSS_DIR = '{}{}'.format(REPO_DIR, '/assets/scss/')
 BUILD_DIR = '{}{}'.format(REPO_DIR, '/assets/build/')
-
 CURRENT_CONTEXT_DATA = None
 CURRENT_CSRF_TOKEN = None
 CURRENT_SESSION_ID = None
-
 whitelisted_extensions = ['.scss', '.css', '.sass']
 
 
 def create_app():
     app = Flask(__name__)
     app.static_folder = STATIC_DIR
-
     loader = jinja2.ChoiceLoader([
         app.jinja_loader,
         jinja2.FileSystemLoader([TEMPLATE_DIR, SCSS_DIR]),
     ])
-
     app.jinja_loader = loader
-
     app.jinja_env.autoescape = False
     app.jinja_env.undefined = SilentUndefined
     app.jinja_env.add_extension(CsrfExtension)
@@ -58,18 +49,15 @@ def create_app():
     app.jinja_env.add_extension(jinja2.ext.do)
     app.jinja_env.add_extension(jinja2.ext.loopcontrols)
     app.jinja_env.add_extension(jinja2.ext.with_)
-
     custom_filters = {name: function for name, function in getmembers(filters) if isfunction(function)}
     app.jinja_env.filters.update(custom_filters)
     app.config.update(
         DEBUG=True,
         TEMPLATES_AUTO_RELOAD=True
     )
-
     app.wsgi_app = SassMiddleware(app.wsgi_app, {
         'bentodev': (REPO + 'assets/sass', REPO + 'assets/css')
     })
-
     return app
 
 
@@ -79,25 +67,23 @@ app = create_app()
 def handle_request(path):
     global CURRENT_CONTEXT_DATA
     global CURRENT_CSRF_TOKEN
-
-    kwargs = {
-        'account': ACCOUNT,
-        'path': path,
-        'help': True,
-    }
-
     cookies = {
         'csrftoken': CURRENT_CSRF_TOKEN,
         'csrfmiddlewaretoken': CURRENT_CSRF_TOKEN,
         'sessionid': CURRENT_SESSION_ID
     }
-
-    request = HelpDataRequest(cookies=cookies, **kwargs)
-    print('REQUEST: ' + request.url)
-    request.get()
-    if request.json():
-        CURRENT_CONTEXT_DATA = request.json()
-        return request.json()
+    kwargs = {
+        'account': ACCOUNT,
+        'path': path,
+        'help': True,
+        'cookies': cookies
+    }
+    r = HelpDataRequest(**kwargs)
+    print('REQUEST: ' + r.url)
+    r.get()
+    if r.json():
+        CURRENT_CONTEXT_DATA = r.json()
+        return r.json()
     else:
         print("No Context Data Returned")
         return None
@@ -108,7 +94,6 @@ def set_cookies(cookies):
         global CURRENT_CSRF_TOKEN
         if not CURRENT_CSRF_TOKEN or (CURRENT_CSRF_TOKEN != cookies['csrftoken']):
             CURRENT_CSRF_TOKEN = cookies['csrftoken']
-
     if 'sessionid' in cookies:
         global CURRENT_SESSION_ID
         if not CURRENT_SESSION_ID or (CURRENT_SESSION_ID != cookies['sessionid']):
@@ -116,10 +101,10 @@ def set_cookies(cookies):
 
 
 def get_csrf_token():
-    request = CookieRequest()
-    request.get()
-    if 'Set-Cookie' in request.request.headers:
-        set_cookies(request.request.cookies)
+    r = CookieRequest()
+    r.get()
+    if 'Set-Cookie' in r.request.headers:
+        set_cookies(r.request.cookies)
 
 
 def compile_scss(path):
@@ -138,28 +123,25 @@ def compile_scss(path):
                     outfile.write(template.render(**CURRENT_CONTEXT_DATA))
                 except Exception as e:
                     print('Error: ' + str(e))
-
     file_path = "{}{}".format(BUILD_DIR, path.split('/')[-1])
-
     with codecs.open(file_path, 'r', 'utf-8') as file:
         scss = file.read()
-
     return sass.compile(string=scss, include_paths=[BUILD_DIR], output_style='nested')
 
 
 @app.route('/assets/<path:path>')
 def static_file_router(path):
     print('REQUEST: ' + path)
-    response = None
+    r = None
     try:
         if '.scss' in path:
             scss = compile_scss(path)
-            response = make_response(scss)
-            response.headers['Content-Type'] = 'text/css'
+            r = make_response(scss)
+            r.headers['Content-Type'] = 'text/css'
         else:
-            response = app.send_static_file(path)
-            response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+            r = app.send_static_file(path)
+            r.headers.add('Access-Control-Allow-Origin', '*')
+        return r
     except Exception as e:
         print(e)
         abort(404)
@@ -169,43 +151,39 @@ def static_file_router(path):
 def form_to_email_router():
     resource_url = request.url
     resource_url = resource_url.replace(request.url_root, '')
-
     get_csrf_token()
-
     kwargs = {
         'account': ACCOUNT,
         'path': resource_url,
         'csrf_token': CURRENT_CSRF_TOKEN,
-        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, 'contact/')
+        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, 'contact/'),
+        'data': request.form.to_dict()
     }
-
-    new_request = AjaxFormRequest(data=request.form.to_dict(), **kwargs)
-    new_request.post()
-
+    r = AjaxFormRequest(**kwargs)
+    r.post()
     response = app.response_class(
-        response=json.dumps(new_request.request.json()),
-        status=new_request.request.status_code,
-        mimetype=new_request.request.headers['Content-Type']
+        response=json.dumps(r.request.json()),
+        status=r.request.status_code,
+        mimetype=r.request.headers['Content-Type']
     )
     return response
 
 
 @app.route('/forms/<path:path>', methods=['POST'])
 def generic_form_router(path):
-
     get_csrf_token()
-
     kwargs = {
         'account': ACCOUNT,
         'path': '{}{}'.format('forms/', path),
+        'data': request.form.to_dict()
     }
-    new_request = GenericFormRequest(data=request.form.to_dict(), **kwargs)
-    new_request.post()
+    r = GenericFormRequest(**kwargs)
+    r.post()
 
     response = app.response_class(
-        response=json.dumps(new_request.request.json()),
-        status=new_request.request.status_code,
-        mimetype=new_request.request.headers['Content-Type']
+        response=json.dumps(r.request.json()),
+        status=r.request.status_code,
+        mimetype=r.request.headers['Content-Type']
     )
     return response
 
@@ -215,53 +193,40 @@ def generic_store_router(path):
     STORE_PATH_URL = 'store/' + path
     args = re.split(r'{}'.format(STORE_PATH_URL), request.url)[-1]
     path = '{}{}'.format(STORE_PATH_URL, args)
-
     get_csrf_token()
-
-    kwargs = {
-        'account': ACCOUNT,
-        'path': path,
-        'csrf_token': CURRENT_CSRF_TOKEN,
-        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, STORE_PATH_URL)
-    }
-
     cookies = {
         'csrftoken': CURRENT_CSRF_TOKEN,
         'csrfmiddlewaretoken': CURRENT_CSRF_TOKEN,
         'sessionid': CURRENT_SESSION_ID
     }
-
-    data = request.form.to_dict()
-
-    new_request = None
-
+    kwargs = {
+        'account': ACCOUNT,
+        'path': path,
+        'csrf_token': CURRENT_CSRF_TOKEN,
+        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, STORE_PATH_URL),
+        'cookies': cookies,
+        'data': request.form.to_dict()
+    }
+    r = None
     if 'X-Requested-With' in request.headers:
-        new_request = AjaxFormRequest(data=data, cookies=cookies, **kwargs)
-        new_request.post()
-
-        print(new_request.request.text)
-        print(new_request.request.headers)
-
-        print('session: ' + str(CURRENT_SESSION_ID))
-        if 'Set-Cookie' in new_request.request.headers:
-            set_cookies(new_request.request.cookies)
-            print('session: ' + CURRENT_SESSION_ID)
-
-        response = app.response_class(
-            response=new_request.request.text,
-            status=new_request.request.status_code,
-            mimetype=new_request.request.headers['Content-Type']
+        kwargs['data'].update(cookies)
+        r = AjaxFormRequest(**kwargs)
+        r.post()
+        if 'Set-Cookie' in r.request.headers:
+            set_cookies(r.request.cookies)
+        return app.response_class(
+            response=r.request.text,
+            status=r.request.status_code,
+            mimetype=r.request.headers['Content-Type']
         )
-
-        return response
     else:
-        data.update(cookies)
-        new_request = GenericFormRequest(data=data, cookies=cookies, **kwargs)
-        new_request.post()
-        if 'Set-Cookie' in new_request.request.headers:
-            set_cookies(new_request.request.cookies)
-        if new_request.request.status_code:
-            return redirect('http://127.0.0.1:5000/store/cart', 302)
+        kwargs['data'].update(cookies)
+        r = GenericFormRequest(**kwargs)
+        r.post()
+        if 'Set-Cookie' in r.request.headers:
+            set_cookies(r.request.cookies)
+        if r.request.status_code:
+            return redirect('http://localhost:5000/store/cart', 302)
 
 
 @app.route('/store/cart/update/<path:path>', methods=['GET'])
@@ -269,36 +234,33 @@ def cart_item_router(path):
     CART_ITEM_UPDATE_URL = 'store/cart/update/'
     args = re.split(r'{}'.format(CART_ITEM_UPDATE_URL), request.url)[-1]
     path = '{}{}'.format(CART_ITEM_UPDATE_URL, args)
-
-    kwargs = {
-        'account': ACCOUNT,
-        'path': path,
-        'csrf_token': CURRENT_CSRF_TOKEN,
-        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, 'store')
-    }
-
     cookies = {
         'csrftoken': CURRENT_CSRF_TOKEN,
         'csrfmiddlewaretoken': CURRENT_CSRF_TOKEN,
         'sessionid': CURRENT_SESSION_ID
     }
-
-    data = request.form.to_dict()
-
-    new_request = None
+    kwargs = {
+        'account': ACCOUNT,
+        'path': path,
+        'csrf_token': CURRENT_CSRF_TOKEN,
+        'referer': 'https://{}.getbento.com/{}'.format(ACCOUNT, 'store'),
+        'data': request.form.to_dict(),
+        'cookies': cookies
+    }
+    r = None
     if 'X-Requested-With' in request.headers:
-        new_request = AjaxFormRequest(data=data, cookies=cookies, **kwargs)
-        new_request.get()
+        r = AjaxFormRequest(**kwargs)
+        r.get()
         return app.response_class(
-            response=new_request.request.text,
-            status=new_request.request.status_code,
-            mimetype=new_request.request.headers['Content-Type']
+            response=r.request.text,
+            status=r.request.status_code,
+            mimetype=r.request.headers['Content-Type']
         )
     else:
-        data.update(cookies)
-        new_request = GenericFormRequest(data=data, cookies=cookies, **kwargs)
-        new_request.get()
-        return redirect('http://127.0.0.1:5000/store/cart', 302)
+        kwargs['data'].update(cookies)
+        r = GenericFormRequest(**kwargs)
+        r.get()
+        return redirect('http://localhost:5000/store/cart', 302)
 
 
 @app.route('/', defaults={'path': ''})
@@ -306,10 +268,8 @@ def cart_item_router(path):
 def path_router(path):
     print('PATH: ' + path)
     context_data = handle_request(path)
-
     if not context_data:
-        return redirect('http://127.0.0.1:5000/', 302)
-
+        return redirect('http://localhost:5000/', 302)
     get_csrf_token()
     if 'template' in context_data['current']:
         template = context_data['current']['template']
@@ -324,4 +284,4 @@ def path_router(path):
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run()

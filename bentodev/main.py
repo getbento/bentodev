@@ -1,11 +1,12 @@
 import click
 from bentodev.command_functions import (
+    get_theme,
     clone_repo,
     run_flask,
     list_accounts,
-    get_theme,
     ListFlags)
 from bentodev.utils import check, check_user, create_user_structure, get_token
+import os
 
 
 @click.group()
@@ -15,7 +16,6 @@ def cli():
     Used to develop themes locally for BentoBox sites!
     """
     check()
-
 ######################################################
 
 
@@ -56,9 +56,14 @@ def clone(slug):
 
 @cli.command('start')
 @click.argument('account', required=False)
-def start(account):
+@click.option('--local', is_flag=True)
+def start(account, local):
     """Begin running the development server"""
-    # click.echo('runserver at %s.localdev.me:8000' % (site))
+
+    os.environ['ENVIRON'] = 'production'
+    if local:
+        os.environ['ENVIRON'] = 'local'
+
     token = get_token()
     if account:
         repo = get_theme(token, account)

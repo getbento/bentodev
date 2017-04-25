@@ -59,7 +59,10 @@ def token_auth():
     print('Enter Password for BentoBox User: %s' % user)
     pw = getpass(prompt="Password: ")
     data = {'email': user, 'password': pw}
-    r = TokenRequest(data=data)
+    kwargs = {
+        'data': data,
+    }
+    r = TokenRequest(**kwargs)
     r.post()
     del pw
     token = ''
@@ -70,7 +73,11 @@ def token_auth():
 
 
 def verify_token(token):
-    r = VerifyRequest(token, data={'token': token})
+    kwargs = {
+        'token': token,
+        'data': {'token': token}
+    }
+    r = VerifyRequest(**kwargs)
     r.post()
     if not r.request.ok:
         print('Token Expired')
@@ -101,7 +108,10 @@ def github_account(token, verbose=True):
     github_check = False
     while not github_check:
         if token:
-            r = GitHubAccountRequest(token=token)
+            kwargs = {
+                'token': token
+            }
+            r = GitHubAccountRequest(**kwargs)
             r.get()
             if r.request.ok and r.json() and verbose:
                 print('Connected to GitHub Account: {}'.format(str(r.json()[0]['username'])))

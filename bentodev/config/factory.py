@@ -3,13 +3,22 @@ from requests.exceptions import ConnectionError, Timeout
 import json
 from json.decoder import JSONDecodeError
 from requests import Session
+from requests.models import Response
+from os import environ
 
 
-PROTOCOL = 'https://'
-BENTOBOX_URL = 'www.getbento.com/'
+try:
+    ENVIRON = str(environ['ENVIRON'])
+except KeyError:
+    ENVIRON = 'production'
 
-# PROTOCOL = 'http://'
-# BENTOBOX_URL = 'localtest.me:8000/'
+if ENVIRON == 'local':
+    PROTOCOL = 'http://'
+    BENTOBOX_URL = 'localtest.me:8000/'
+else:
+    PROTOCOL = 'https://'
+    BENTOBOX_URL = 'www.getbento.com/'
+
 
 ACCOUNT_URL = '{}{}'.format(
     BENTOBOX_URL, 'api/account')
@@ -61,24 +70,31 @@ def store_token_url_build(account, path):
     return '{}{}.{}{}'.format(PROTOCOL, account, BENTOBOX_URL, path)
 
 
+def connection_error():
+    print("Cannot connect to BentoBox. Check network connection.")
+    if ENVIRON == 'local':
+        print("Local sever may not be running.")
+    exit()
+
+
 class RequestFactory():
 
-    def __init__(self, url=None, headers=None, data=None, token=None, cookies=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """" Initialize a request """
-        self.url = url
+        self.url = kwargs['url']
         self.headers = {
             'Content-Type': 'application/json',
         }
-        if headers:
-            self.headers.update(headers)
-        if token:
-            self.headers.update({'Authorization': 'JWT ' + token})
+        if 'headers' in kwargs:
+            self.headers.update(kwargs['headers'])
+        if 'token' in kwargs:
+            self.headers.update({'Authorization': 'JWT ' + kwargs['token']})
         self.data = {}
-        if data:
-            self.data.update(data)
+        if 'data' in kwargs:
+            self.data.update(kwargs['data'])
         self.cookies = {}
-        if cookies:
-            self.cookies.update(cookies)
+        if 'cookies' in kwargs:
+            self.cookies.update(kwargs['cookies'])
         self.request = None
 
     def get(self):
@@ -91,8 +107,7 @@ class RequestFactory():
                 cookies=self.cookies,
             )
         except (ConnectionError, Timeout):
-            print("Cannot connect to BentoBox. Check network connection.")
-            exit()
+            connection_error()
         error(self)
 
     def post(self):
@@ -106,8 +121,7 @@ class RequestFactory():
                 allow_redirects=False
             )
         except (ConnectionError, Timeout):
-            print("Cannot connect to BentoBox. Check network connection.")
-            exit()
+            connection_error()
         error(self)
 
     def json(self):
@@ -119,21 +133,21 @@ class RequestFactory():
 
 class SessionFactory():
 
-    def __init__(self, url=None, headers=None, data=None, token=None, cookies=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """" Initialize a request """
-        self.url = url
+        self.url = kwargs['url']
         self.session = Session()
         self.session.headers.update({'Content-Type': 'application/json'})
-        if headers:
-            self.session.headers.update(headers)
-        if token:
-            self.session.headers.update({'Authorization': 'JWT ' + token})
+        if 'headers' in kwargs:
+            self.session.headers.update(kwargs['headers'])
+        if 'token' in kwargs:
+            self.session.headers.update({'Authorization': 'JWT ' + kwargs['token']})
         self.data = {}
-        if data:
-            self.data.update(data)
+        if 'data' in kwargs:
+            self.data.update(kwargs['data'])
         self.cookies = {}
-        if cookies:
-            self.cookies.update(cookies)
+        if 'cookies' in kwargs:
+            self.cookies.update(kwargs['cookies'])
         self.request = None
 
     def get(self):
@@ -144,9 +158,10 @@ class SessionFactory():
                 data=json.dumps(self.data),
                 cookies=self.cookies,
             )
+            if self.request.history and type(self.request.history[0]) is Response and self.request.history[0].status_code == 301:
+                self.get()
         except (ConnectionError, Timeout):
-            print("Cannot connect to BentoBox. Check network connection.")
-            exit()
+            connection_error()
         error(self)
 
     def post(self):
@@ -158,11 +173,8 @@ class SessionFactory():
                 cookies=self.cookies,
                 allow_redirects=False
             )
-            # if self.request.history[0].request:
-            #     post()
         except (ConnectionError, Timeout):
-            print("Cannot connect to BentoBox. Check network connection.")
-            exit()
+            connection_error()
         error(self)
 
     def json(self):
@@ -174,8 +186,8 @@ class SessionFactory():
 
 class TokenRequest(RequestFactory):
 
-    def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
-        super(TokenRequest, self).__init__(url=TOKEN_URL, data=data)
+    def __init__(self, *args, **kwargs):
+        super(TokenRequest, self).__init__(url=TOKEN_URL, data=kwargs['data'])
 
     def post(self):
         super(TokenRequest, self).post()
@@ -183,35 +195,33 @@ class TokenRequest(RequestFactory):
 
 
 class VerifyRequest(SessionFactory):
-    def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
-        super(VerifyRequest, self).__init__(url=VERIFY_URL, token=token, data=data)
+    def __init__(self, *args, **kwargs):
+        super(VerifyRequest, self).__init__(
+            url=VERIFY_URL,
+            token=kwargs['token'],
+            data=kwargs['data']
+        )
 
 
 class GitHubAccountRequest(SessionFactory):
-    def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(GitHubAccountRequest, self).__init__(
-            headers=headers,
             url=GITHUB_ACCOUNT_URL,
-            data=data,
-            token=token,
+            token=kwargs['token'],
         )
-
-    def get(self):
-        super(GitHubAccountRequest, self).get()
-        super(GitHubAccountRequest, self).get()
 
 
 class HelpDataRequest(RequestFactory):
-    def __init__(self, url=None, headers=None, data=None, token=None, cookies=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(HelpDataRequest, self).__init__(
             url=context_url_build(account=kwargs['account'], path=kwargs['path']),
             headers={'X-Requested-With': 'XMLHttpRequest'},
-            cookies=cookies
+            cookies=kwargs['cookies']
         )
 
 
 class CookieRequest(RequestFactory):
-    def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(CookieRequest, self).__init__(
             url=CSRF_TOKEN_URL
         )
@@ -219,12 +229,10 @@ class CookieRequest(RequestFactory):
 
 
 class AccountRequest(SessionFactory):
-    def __init__(self, url=None, headers=None, data=None, token=None, *args, **kwargs):
-        url = account_url_builder(account=kwargs['account'])
-        print(url)
+    def __init__(self, *args, **kwargs):
         super(AccountRequest, self).__init__(
-            url=url,
-            token=token
+            url=account_url_builder(account=kwargs['account']),
+            token=kwargs['token']
         )
 
     def get(self):
@@ -233,9 +241,7 @@ class AccountRequest(SessionFactory):
 
 
 class AjaxFormRequest(RequestFactory):
-    def __init__(self, url=None, headers=None, data=None, token=None,  cookies=None, *args, **kwargs):
-        for k, v in kwargs.items():
-            print(k + ': ' + v)
+    def __init__(self, *args, **kwargs):
         super(AjaxFormRequest, self).__init__(
             url=form_url_build(account=kwargs['account'], path=kwargs['path']),
             headers={
@@ -244,8 +250,8 @@ class AjaxFormRequest(RequestFactory):
                 'X-CSRFToken': kwargs['csrf_token'],
                 'Referer': kwargs['referer']
             },
-            data=data,
-            cookies=cookies,
+            data=kwargs['data'],
+            cookies=kwargs['data'],
         )
 
     def post(self):
@@ -260,19 +266,18 @@ class AjaxFormRequest(RequestFactory):
 
 
 class GenericFormRequest(RequestFactory):
-    def __init__(self, url=None, headers=None, data=None, token=None,  cookies=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(GenericFormRequest, self).__init__(
             url=form_url_build(account=kwargs['account'], path=kwargs['path']),
             headers={
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 'Referer': kwargs['referer']
             },
-            data=data,
-            cookies=cookies,
+            data=kwargs['data'],
+            cookies=kwargs['cookies'],
         )
 
     def get(self):
-        print(self.url)
         """" Make a post request """
         self.request = requests.get(
             self.url,

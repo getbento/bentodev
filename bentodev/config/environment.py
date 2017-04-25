@@ -55,22 +55,3 @@ class ScssUrlExtension(Extension):
         path = path.lstrip('/')
         url = '{}{}'.format('http://localhost:5000/assets/', path)
         return url
-
-#         extension = file_parts[-1]
-#         filename = file_parts[0]
-
-#         account = settings.current_view.account
-#         assets_hash = account.assets_hash
-
-#         if not assets_hash:
-#             assets_hash = '123'
-
-#         is_preview = getattr(settings.current_view, 'is_preview', False)
-
-#         css_url = reverse('rendered_stylesheet', args=[
-#             account.slug, filename, assets_hash, extension])
-
-#         if not settings.DEBUG and account.in_production and not is_preview:
-#             css_url = account.static_cdn_url + css_url
-
-#         return css_url

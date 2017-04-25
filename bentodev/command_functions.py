@@ -4,22 +4,14 @@ from enum import Enum
 from git import Repo
 from shutil import get_terminal_size
 from webbrowser import open_new_tab
+from functools import wraps
 
-from bentodev.config.factory import (
-    AccountRequest,
-    SessionFactory,
-    RequestFactory,
-    ACCOUNT_URL,
-    ACCOUNTS_URL,
-    THEMES_URL
-)
+from bentodev.config.factory import AccountRequest, SessionFactory, ACCOUNTS_URL, THEMES_URL, TOKEN_URL
 from bentodev.utils import github_account
-
 
 HOME_DIR = os.path.expanduser('~')
 BENTODEV_DIR = HOME_DIR + '/bentodev/'
 THEMES_DIR = BENTODEV_DIR + 'sites/'
-
 WIDTH = int((get_terminal_size()[0] - 5) / 2)
 
 
@@ -28,12 +20,14 @@ class ListFlags(Enum):
     START = 2
 
 
+# @check_local
 def get_theme(token, account):
     kwargs = {
         'account': account,
         'help': True,
+        'token': token
     }
-    r = AccountRequest(token=token, **kwargs)
+    r = AccountRequest(**kwargs)
     r.get()
     if r.request.ok and r.json():
         theme_pk = r.json()[0]['theme']
@@ -57,8 +51,11 @@ def list_available_repos():
 
 def list_accounts(token, flag=None):
     if github_account(token):
-        r = SessionFactory(url=ACCOUNTS_URL, token=token)
-        r.get()
+        kwargs = {
+            'url': ACCOUNTS_URL,
+            'token': token
+        }
+        r = SessionFactory(**kwargs)
         r.get()
         if r.request.ok and r.json():
             print('{0: <{2}} | {1: <{2}}'.format('Account', 'Theme', WIDTH))
@@ -84,15 +81,17 @@ def run_flask(account, repo):
     os.environ['ACCOUNT'] = account
     os.environ['REPO'] = repo
     os.environ['FLASK_APP'] = dir + '/server.py'
-    os.system("flask run -h 0.0.0.0 --debugger")
+    os.system("flask run --debugger")
 
 
 def clone_repo(token, slug):
     if github_account(token):
-        r = SessionFactory(url=THEMES_URL, token=token)
+        kwargs = {
+            'url': THEMES_URL,
+            'token': token
+        }
+        r = SessionFactory(**kwargs)
         r.get()
-        r.get()
-
         if r.json():
             for theme in r.json():
                 if theme['slug'] == slug:
