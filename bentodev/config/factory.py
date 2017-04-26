@@ -29,7 +29,7 @@ GITHUB_ACCOUNT_URL = '{}{}{}'.format(
 THEMES_URL = '{}{}{}'.format(
     PROTOCOL, BENTOBOX_URL, 'api/developers/themes')
 TOKEN_URL = '{}{}{}'.format(
-    PROTOCOL, BENTOBOX_URL, 'api/developers/api-token-auth/')
+    PROTOCOL, BENTOBOX_URL.replace('www.', ''), 'api/developers/api-token-auth/')
 VERIFY_URL = '{}{}{}'.format(
     PROTOCOL, BENTOBOX_URL, 'api/developers/api-token-verify/')
 CSRF_TOKEN_URL = '{}{}{}'.format(
@@ -173,6 +173,8 @@ class SessionFactory():
                 cookies=self.cookies,
                 allow_redirects=False
             )
+            if self.request.history and type(self.request.history[0]) is Response and self.request.history[0].status_code == 301:
+                self.post()
         except (ConnectionError, Timeout):
             connection_error()
         error(self)
@@ -190,7 +192,8 @@ class TokenRequest(RequestFactory):
         super(TokenRequest, self).__init__(url=TOKEN_URL, data=kwargs['data'])
 
     def post(self):
-        super(TokenRequest, self).post()
+        """" Make a post request """
+        self.request = requests.post(self.url, self.data)
         self.data = {}
 
 
