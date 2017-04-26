@@ -1,0 +1,26 @@
+{% macro email_form(recipient, action='/form_to_email/', class='') -%}
+    <form id="email_form" class="{{ class }}" action="{{ action }}" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div style="display: none;">
+        <label>leave this field blank
+            <input type="text" name="comment_body" value="" />
+        </label>
+    </div>
+    {% if recipient %}
+    <input id="recipient" type="hidden" name="recipient" value="{{ recipient }}">
+    {% endif %}
+    {{ caller() }}
+    </form>
+{%- endmacro %}
+
+{% macro newsletter_form(action='/email_provider_subscribe/', class='') -%}
+    <form id="newsletter" class="{{ class }}" action="{{ action }}" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div style="display: none;">
+        <label>leave this field blank
+            <input type="text" name="comment_body" value="" />
+        </label>
+    </div>
+    {{ caller() }}
+    </form>
+{%- endmacro %}

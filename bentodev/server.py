@@ -27,6 +27,7 @@ STATIC_DIR = '{}{}'.format(REPO_DIR, '/assets/')
 TEMPLATE_DIR = '{}{}'.format(REPO_DIR, '/templates/')
 SCSS_DIR = '{}{}'.format(REPO_DIR, '/assets/scss/')
 BUILD_DIR = '{}{}'.format(REPO_DIR, '/assets/build/')
+MACROS_DIR = '{}{}'.format(path.abspath(path.dirname(__file__)), '/templates/macros/')
 CURRENT_CONTEXT_DATA = None
 CURRENT_CSRF_TOKEN = None
 CURRENT_SESSION_ID = None
@@ -36,9 +37,10 @@ whitelisted_extensions = ['.scss', '.css', '.sass']
 def create_app():
     app = Flask(__name__)
     app.static_folder = STATIC_DIR
+    print(MACROS_DIR)
     loader = jinja2.ChoiceLoader([
         app.jinja_loader,
-        jinja2.FileSystemLoader([TEMPLATE_DIR, SCSS_DIR]),
+        jinja2.FileSystemLoader([TEMPLATE_DIR, SCSS_DIR, MACROS_DIR]),
     ])
     app.jinja_loader = loader
     app.jinja_env.autoescape = False
