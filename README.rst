@@ -128,7 +128,6 @@ It pulls data from the production (or a local) BentoBox instance and allows real
 Dependencies
 ~~~~~~~~~~~~
 
-Under the hood, HTTPie uses these two amazing libraries:
 * `Flask <https://http://flask.pocoo.org>`_
 * `Jinja2 <http://jinja.pocoo.org/>`_
 * `Requests <https://python-requests.org>`_
