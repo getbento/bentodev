@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import click
-from lib.bentodev.command_functions import (
+from lib.bentodev.utils.command_functions import (
     get_theme,
     clone_repo,
     run_flask,
     list_accounts,
     ListFlags)
-from lib.bentodev.utils import check, check_user, create_user_structure, get_token
+from lib.bentodev.utils.helpers import check, check_user, create_user_structure, get_token
 import os
 
 
