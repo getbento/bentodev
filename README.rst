@@ -89,7 +89,7 @@ You should then see the server run, where you can connect at `localhost:5000 <ht
 Development
 ===========
 
-To develop simply Git clone the associated URL (located on Private GitHub).
+To develop simply Git clone the associated URL.
 
 Feature or test branches created must have be approved through pull request review before merging with master.
 
