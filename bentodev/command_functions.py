@@ -98,8 +98,11 @@ def clone_repo(token, slug):
                     github_repo_url = (theme['github_repo_url'])
                     try:
                         clone_dir = '{}{}'.format(THEMES_DIR, slug)
-                        Repo.clone_from(github_repo_url, clone_dir)
-                        print('Succesfully cloned {} to:\n{}'.format(slug, clone_dir))
+                        if github_repo_url:
+                            Repo.clone_from(github_repo_url, clone_dir)
+                            print('Succesfully cloned {} to:\n{}'.format(slug, clone_dir))
+                        else:
+                            print('GitHub repo url not connected to theme through BentoBox')
                     except Exception as e:
                         print(e)
                         raise SystemExit
