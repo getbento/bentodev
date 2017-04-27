@@ -3,31 +3,33 @@ import os
 import re
 import sass
 import jinja2.ext
-from flask import Flask, render_template, make_response, abort, request, json, redirect, url_for, Response
+from flask import Flask, render_template, make_response, abort, request, json, redirect
 from inspect import getmembers, isfunction
-from os import path, environ
 from sassutils.wsgi import SassMiddleware
-from bentodev.config import filters
-from bentodev.config.environment import (
+from lib.bentodev.utils import filters
+from lib.bentodev.utils.environment import (
     CsrfExtension,
     ScssUrlExtension,
     SilentUndefined,
     StaticFilesExtension,
 )
-from bentodev.config.factory import HelpDataRequest, GenericFormRequest, CookieRequest, AjaxFormRequest
+from lib.bentodev.utils.factory import HelpDataRequest, GenericFormRequest, CookieRequest, AjaxFormRequest
 
 
-REPO = str(environ['REPO'])
-ACCOUNT = str(environ['ACCOUNT'])
-ENVIRON = str(environ['ENVIRON'])
-HOME_DIR = path.expanduser('~')
-BENTODEV_DIR = HOME_DIR + '/bentodev/'
-REPO_DIR = '{}{}{}'.format(BENTODEV_DIR, 'sites/', REPO)
-STATIC_DIR = '{}{}'.format(REPO_DIR, '/assets/')
-TEMPLATE_DIR = '{}{}'.format(REPO_DIR, '/templates/')
-SCSS_DIR = '{}{}'.format(REPO_DIR, '/assets/scss/')
-BUILD_DIR = '{}{}'.format(REPO_DIR, '/assets/build/')
-MACROS_DIR = '{}{}'.format(path.abspath(path.dirname(__file__)), '/templates/macros/')
+REPO = str(os.environ['REPO'])
+ACCOUNT = str(os.environ['ACCOUNT'])
+ENVIRON = str(os.environ['ENVIRON'])
+
+MACROS_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates', 'jinja2', 'macros')
+
+HOME_DIR = os.path.expanduser('~')
+BENTODEV_URSER_DIR = os.path.join(HOME_DIR, 'bentodev')
+REPO_DIR = os.path.join(BENTODEV_URSER_DIR, 'sites', REPO)
+STATIC_DIR = os.path.join(REPO_DIR, 'assets')
+TEMPLATE_DIR = os.path.join(REPO_DIR, 'templates')
+SCSS_DIR = os.path.join(REPO_DIR, 'assets', 'scss')
+BUILD_DIR = os.path.join(REPO_DIR, 'assets', 'build')
+
 CURRENT_CONTEXT_DATA = None
 CURRENT_CSRF_TOKEN = None
 CURRENT_SESSION_ID = None
@@ -58,7 +60,7 @@ def create_app():
         TEMPLATES_AUTO_RELOAD=True
     )
     app.wsgi_app = SassMiddleware(app.wsgi_app, {
-        'bentodev': (REPO + 'assets/sass', REPO + 'assets/css')
+        'lib.bentodev': (REPO + 'assets/sass', REPO + 'assets/css')
     })
     return app
 
@@ -120,12 +122,12 @@ def compile_scss(path):
                 continue
             with codecs.open(os.path.join(new_path, file), 'w+', 'utf-8') as outfile:
                 try:
-                    filepath = "{}/{}".format(root.replace(SCSS_DIR, ''), file)
+                    filepath = os.path.join(root.replace(SCSS_DIR, ''), file)
                     template = app.jinja_env.get_template(filepath)
                     outfile.write(template.render(**CURRENT_CONTEXT_DATA))
                 except Exception as e:
                     print('Error: ' + str(e))
-    file_path = "{}{}".format(BUILD_DIR, path.split('/')[-1])
+    file_path = os.path.join(BUILD_DIR, path.split('/')[-1])
     with codecs.open(file_path, 'r', 'utf-8') as file:
         scss = file.read()
     return sass.compile(string=scss, include_paths=[BUILD_DIR], output_style='nested')

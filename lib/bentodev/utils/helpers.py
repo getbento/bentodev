@@ -3,16 +3,20 @@ import os
 from webbrowser import open_new_tab
 from getpass import getpass
 from shutil import copy2
-from bentodev.config.factory import (
+from lib.bentodev.utils.factory import (
     TokenRequest,
     VerifyRequest,
     GitHubAccountRequest
 )
 
 HOME_DIR = os.path.expanduser('~')
-BENTODEV_DIR = '{}{}'.format(HOME_DIR, '/bentodev/')
-USER_CONFIG = '{}{}'.format(BENTODEV_DIR, 'config.json')
-SITE_DIR = '{}{}'.format(BENTODEV_DIR, 'sites/')
+BENTODEV_USER_DIR = os.path.join(HOME_DIR, 'bentodev')
+USER_CONFIG = os.path.join(BENTODEV_USER_DIR, 'config.json')
+SITE_DIR = os.path.join(BENTODEV_USER_DIR, 'sites')
+
+BENTODEV_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+GLOBAL_CONFIG = os.path.join(BENTODEV_DIR, 'config', 'base_config.json')
+SETUP_FILE = os.path.join(BENTODEV_DIR, 'setup_files', 'config.json')
 
 
 def create_user_structure(verbose):
@@ -20,10 +24,10 @@ def create_user_structure(verbose):
         if verbose:
             print('No home directory. Exiting gracefully.')
         raise SystemExit
-    if not os.path.exists(BENTODEV_DIR):
+    if not os.path.exists(BENTODEV_USER_DIR):
         if verbose:
             print("Creating ~/bentodev/ ...")
-        os.makedirs(BENTODEV_DIR)
+        os.makedirs(BENTODEV_USER_DIR)
     if not os.path.exists(SITE_DIR):
         if verbose:
             print("Creating ~/bentodev/sites/ ...")
@@ -31,9 +35,7 @@ def create_user_structure(verbose):
     if not os.path.exists(USER_CONFIG):
         if verbose:
             print("Creating ~/bentodev/config.json ...")
-        dir = os.path.dirname(os.path.realpath(__file__))
-        setup_file = dir + '/setup_files/config.json'
-        copy2(setup_file, BENTODEV_DIR)
+        copy2(SETUP_FILE, BENTODEV_USER_DIR)
 
 
 def check_user(verbose, username=None):
@@ -86,15 +88,14 @@ def verify_token(token):
 
 
 def get_token():
-    global_config = os.path.dirname(os.path.realpath(__file__)) + '/base_config.json'
-    config_file = open(global_config, "r")
+    config_file = open(GLOBAL_CONFIG, "r")
     config_data = json.load(config_file)
     config_file.close()
     token = ''
     while not token:
         if not config_data['BENTOBOX_TOKEN']:
             config_data['BENTOBOX_TOKEN'] = token_auth()
-            with open(global_config, "w") as config_file:
+            with open(GLOBAL_CONFIG, "w") as config_file:
                 json.dump(config_data, config_file, sort_keys=True, indent=4)
             config_file.close()
         elif not verify_token(config_data['BENTOBOX_TOKEN']):

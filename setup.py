@@ -39,11 +39,13 @@ setup(
     ],
     keywords='bentobox bentodev',
     packages=find_packages(),
-    package_data={'bentodev': ['base_config.json', 'setup_files/config.json']},
+    package_data={'lib/bentodev': ['base_config.json', 'setup_files/config.json']},
     include_package_data=True,
     install_requires=install_requirements,
+    scripts=[
+        'bin/bentodev'
+    ],
     entry_points='''
         [console_scripts]
-        bentodev=bentodev.main:cli
     ''',
 )
