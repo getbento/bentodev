@@ -1,5 +1,4 @@
 include README.rst
 include requirements.txt
-include setup_files/config.json
-include bentodev/base_config.json
-include bentodev/setup_files/config.json
+include lib/bentodev/config/base_config.json
+include lib/bentodev/setup_files/config.json
