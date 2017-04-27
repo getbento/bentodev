@@ -11,10 +11,14 @@ import os
 
 @click.group()
 @click.version_option()
-def cli():
+@click.option('--local', is_flag=True)
+def cli(local):
     """BentoDev
     Used to develop themes locally for BentoBox sites!
     """
+    os.environ['ENVIRON'] = 'production'
+    if local:
+        os.environ['ENVIRON'] = 'local'
     check()
 ######################################################
 
@@ -56,14 +60,8 @@ def clone(slug):
 
 @cli.command('start')
 @click.argument('account', required=False)
-@click.option('--local', is_flag=True)
-def start(account, local):
+def start(account):
     """Begin running the development server"""
-
-    os.environ['ENVIRON'] = 'production'
-    if local:
-        os.environ['ENVIRON'] = 'local'
-
     token = get_token()
     if account:
         repo = get_theme(token, account)
