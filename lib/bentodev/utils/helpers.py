@@ -3,7 +3,7 @@ import os
 from webbrowser import open_new_tab
 from getpass import getpass
 from shutil import copy2
-from lib.bentodev.utils.factory import (
+from bentodev.utils.factory import (
     TokenRequest,
     VerifyRequest,
     GitHubAccountRequest

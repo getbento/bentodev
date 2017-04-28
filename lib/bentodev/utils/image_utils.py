@@ -1,4 +1,4 @@
-from lib.bentodev.config.settings import (
+from bentodev.config.settings import (
     AWS_BUCKET_URL,
     IMGIX_URL,
     AWS_S3_CUSTOM_DOMAIN

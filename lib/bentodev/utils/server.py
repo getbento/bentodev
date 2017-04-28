@@ -6,14 +6,14 @@ import jinja2.ext
 from flask import Flask, render_template, make_response, abort, request, json, redirect
 from inspect import getmembers, isfunction
 from sassutils.wsgi import SassMiddleware
-from lib.bentodev.utils import filters
-from lib.bentodev.utils.environment import (
+from bentodev.utils import filters
+from bentodev.utils.environment import (
     CsrfExtension,
     ScssUrlExtension,
     SilentUndefined,
     StaticFilesExtension,
 )
-from lib.bentodev.utils.factory import HelpDataRequest, GenericFormRequest, CookieRequest, AjaxFormRequest
+from bentodev.utils.factory import HelpDataRequest, GenericFormRequest, CookieRequest, AjaxFormRequest
 
 
 REPO = str(os.environ['REPO'])
@@ -60,7 +60,7 @@ def create_app():
         TEMPLATES_AUTO_RELOAD=True
     )
     app.wsgi_app = SassMiddleware(app.wsgi_app, {
-        'lib.bentodev': (REPO + 'assets/sass', REPO + 'assets/css')
+        'bentodev': (REPO + 'assets/sass', REPO + 'assets/css')
     })
     return app
 

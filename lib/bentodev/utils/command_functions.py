@@ -6,8 +6,8 @@ from shutil import get_terminal_size
 from webbrowser import open_new_tab
 from functools import wraps
 
-from lib.bentodev.utils.factory import AccountRequest, SessionFactory, ACCOUNTS_URL, THEMES_URL, TOKEN_URL
-from lib.bentodev.utils.helpers import github_account
+from bentodev.utils.factory import AccountRequest, SessionFactory, ACCOUNTS_URL, THEMES_URL, TOKEN_URL
+from bentodev.utils.helpers import github_account
 
 HOME_DIR = os.path.expanduser('~')
 BENTODEV_DIR = HOME_DIR + '/bentodev/'

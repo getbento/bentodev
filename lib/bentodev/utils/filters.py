@@ -9,7 +9,7 @@ from decimal import Decimal
 from dateutil import parser
 from money import Money
 
-from .image_utils import generate_resize_url, get_raw_image_url
+from bentodev.utils.image_utils import generate_resize_url, get_raw_image_url
 from slugify import slugify as slugify_external
 
 

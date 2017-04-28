@@ -22,7 +22,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='bentodev',
-    version='0.1.5',
+    version='0.1.5a',
     description='BentoBox Local Development System',
     long_description=long_description,
     url='https://github.com/getbento/bentodev',
@@ -38,10 +38,10 @@ setup(
         'Topic :: Software Development :: Build Tools',
     ],
     keywords='bentobox bentodev',
-    packages=find_packages(),
-    package_data={'lib/bentodev': ['base_config.json', 'setup_files/config.json']},
-    include_package_data=True,
     install_requires=install_requirements,
+    package_dir={'': 'lib'},
+    packages=find_packages('lib'),
+    package_data={'bentodev': ['config/base_config.json', 'setup_files/config.json']},
     scripts=[
         'bin/bentodev'
     ],
