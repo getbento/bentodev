@@ -26,11 +26,11 @@ It is recommended to install bentodev on a seperate Python 3 virtual environment
   $ virtualenv -p python3 venv
   $ source venv/bin/activate
 
-After ensuring one is on the correct Python 3 environment simply pip install:
+After ensuring one is on the correct Python 3 environment simply pip install the latest version:
 
 .. code-block:: bash
 
-  $ pip install bentodev
+  $ pip install bentodev==0.1.6
 
 Usage
 ===========
