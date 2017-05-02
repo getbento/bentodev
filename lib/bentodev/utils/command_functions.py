@@ -95,7 +95,7 @@ def clone_repo(token, slug):
         if r.json():
             for theme in r.json():
                 if theme['slug'] == slug:
-                    github_repo_url = (theme['github_repo_url'])
+                    github_repo_url = 'git@github.com:getbento/{}.git'.format(slug)
                     try:
                         clone_dir = '{}{}'.format(THEMES_DIR, slug)
                         if github_repo_url:

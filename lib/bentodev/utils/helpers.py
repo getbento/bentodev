@@ -15,8 +15,10 @@ USER_CONFIG = os.path.join(BENTODEV_USER_DIR, 'config.json')
 SITE_DIR = os.path.join(BENTODEV_USER_DIR, 'sites')
 
 BENTODEV_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-GLOBAL_CONFIG = os.path.join(BENTODEV_DIR, 'config', 'base_config.json')
-SETUP_FILE = os.path.join(BENTODEV_DIR, 'setup_files', 'config.json')
+CONFIG_DIR = os.path.join(BENTODEV_DIR, 'config')
+GLOBAL_CONFIG = os.path.join(CONFIG_DIR, 'base_config.json')
+CONFIG_EMPTY = os.path.join(BENTODEV_DIR, 'setup_files', 'config.json')
+GLOBAL_CONFIG_EMPTY = os.path.join(BENTODEV_DIR, 'setup_files', 'base_config.json')
 
 
 def create_user_structure(verbose):
@@ -35,7 +37,11 @@ def create_user_structure(verbose):
     if not os.path.exists(USER_CONFIG):
         if verbose:
             print("Creating ~/bentodev/config.json ...")
-        copy2(SETUP_FILE, BENTODEV_USER_DIR)
+        copy2(CONFIG_EMPTY, BENTODEV_USER_DIR)
+    if not os.path.exists(GLOBAL_CONFIG):
+        if verbose:
+            print("Creating global config ...")
+        copy2(GLOBAL_CONFIG_EMPTY, CONFIG_DIR)
 
 
 def check_user(verbose, username=None):
