@@ -30,7 +30,7 @@ After ensuring one is on the correct Python 3 environment simply pip install the
 
 .. code-block:: bash
 
-  $ pip install bentodev==0.1.6
+  $ pip install bentodev
 
 Usage
 ===========
