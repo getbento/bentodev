@@ -17,14 +17,11 @@ Released
 2.0.0     "Hermit Purple" TBA
 1.0.0     "Joestar"       TBA
 0.1.8     "Speedwagon"    05-03-2017
-0.1.7     Untitled
-0.1.6     Untitled
-0.1.5rc1  Untitled
-0.1.5rc0  Untitled
-0.1.5b0   Untitled
-0.1.5a0   Untitled
-0.1.4     Untitled
-0.1.3     Untitled
-0.1.2     Untitled
-0.1.1     Untitled
-0.1.0     Untitled
+0.1.7     "Speedwagon"
+0.1.6     "Speedwagon"
+0.1.5     "Speedwagon"
+0.1.4     "Speedwagon"
+0.1.3     "Speedwagon"
+0.1.2     "Speedwagon"
+0.1.1     "Speedwagon"
+0.1.0     "Speedwagon"
