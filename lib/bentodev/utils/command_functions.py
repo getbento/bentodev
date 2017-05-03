@@ -27,7 +27,18 @@ class ListFlags(Enum):
     START = 2
 
 
-# @check_local
+def set_user_settings():
+    user_settings = get_user_settings()
+    if 'DEV_ROOT' in user_settings:
+        if os.path.exists(user_settings['DEV_ROOT']):
+            global THEMES_DIR
+            THEMES_DIR = THEMES_DIR.replace(BENTODEV_DIR, user_settings['DEV_ROOT'])
+        else:
+            print('Path defined for DEV_ROOT does not exist')
+            raise SystemExit
+    return user_settings
+
+
 def get_theme(token, account):
     kwargs = {
         'account': account,
@@ -47,16 +58,23 @@ def get_theme(token, account):
 
 
 def get_cloned_themes():
-    return {name for name in os.listdir(THEMES_DIR)}
+    if os.path.exists(THEMES_DIR):
+        return {name for name in os.listdir(THEMES_DIR)}
+    else:
+        print('Custom folder `{}` does not exists.\nPlease create the folder.'.format(str(THEMES_DIR)))
+        raise SystemExit
 
 
 def list_available_repos():
+    set_user_settings()
+    cloned_themes = get_cloned_themes()
     print("Select a theme to work with:")
     print('{0:-<{WIDTH}}'.format('-', '', WIDTH=WIDTH*2))
-    [print(theme) for theme in get_cloned_themes()]
+    [print(theme) for theme in cloned_themes]
 
 
 def list_accounts(token, flag=None):
+    set_user_settings()
     if github_account(token):
         kwargs = {
             'url': ACCOUNTS_URL,
@@ -65,9 +83,9 @@ def list_accounts(token, flag=None):
         r = SessionFactory(**kwargs)
         r.get()
         if r.request.ok and r.json():
+            cloned_themes = get_cloned_themes()
             print('{0: <{2}} | {1: <{2}}'.format('Account', 'Theme', WIDTH))
             print('{0:-<{WIDTH}}'.format('-', '', WIDTH=WIDTH*2))
-            cloned_themes = get_cloned_themes()
             for account in r.json():
                 slug = account['slug']
                 theme_name = account['theme']
@@ -80,20 +98,16 @@ def list_accounts(token, flag=None):
 
 
 def run_flask(account, repo):
+    user_settings = set_user_settings()
     cloned_themes = get_cloned_themes()
     if repo not in cloned_themes:
         print("Theme has not been cloned!")
         raise SystemExit
-    user_settings = get_user_settings()
     main(repo, account, user_settings)
 
 
 def clone_repo(token, slug):
-    user_settings = get_user_settings()
-    print(user_settings)
-    if 'DEV_ROOT' in user_settings:
-        global THEMES_DIR
-        THEMES_DIR = THEMES_DIR.replace(BENTODEV_DIR, user_settings['DEV_ROOT'])
+    set_user_settings()
     if github_account(token):
         kwargs = {
             'url': THEMES_URL,
