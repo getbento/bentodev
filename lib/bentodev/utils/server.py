@@ -16,7 +16,7 @@ from bentodev.utils.environment import (
 from bentodev.utils.factory import HelpDataRequest, GenericFormRequest, CookieRequest, AjaxFormRequest
 
 
-REPO = None
+THEME = None
 ACCOUNT = None
 MACROS_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates', 'jinja2', 'macros')
 HOME_DIR = os.path.expanduser('~')
@@ -36,9 +36,10 @@ app = Flask(__name__)
 
 def create_app():
     app.debug = True
+    app.threaded = True
+
     app.jinja_env.auto_reload = True
     app.config['TEMPLATES_AUTO_RELOAD'] = True
-
     app.static_folder = STATIC_DIR
     loader = jinja2.ChoiceLoader([
         app.jinja_loader,
@@ -57,26 +58,26 @@ def create_app():
     app.jinja_env.filters.update(custom_filters)
 
     app.wsgi_app = SassMiddleware(app.wsgi_app, {
-        'bentodev': (REPO + 'assets/sass', REPO + 'assets/css')
+        'bentodev': (THEME + 'assets/sass', THEME + 'assets/css')
     })
     return app
 
 
-def set_globals(repo, account, user_settings):
-    global REPO, ACCOUNT, BENTODEV_URSER_DIR, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR, BUILD_DIR
-    REPO = repo
+def set_globals(theme, account, user_settings):
+    global THEME, ACCOUNT, BENTODEV_URSER_DIR, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR, BUILD_DIR
+    THEME = theme
     ACCOUNT = account
     if 'DEV_ROOT' in user_settings:
         BENTODEV_URSER_DIR = user_settings['DEV_ROOT']
-    REPO_DIR = os.path.join(BENTODEV_URSER_DIR, 'sites', REPO)
+    REPO_DIR = os.path.join(BENTODEV_URSER_DIR, 'sites', THEME)
     STATIC_DIR = os.path.join(REPO_DIR, 'assets')
     TEMPLATE_DIR = os.path.join(REPO_DIR, 'templates')
     SCSS_DIR = os.path.join(REPO_DIR, 'assets', 'scss')
     BUILD_DIR = os.path.join(REPO_DIR, 'assets', 'build')
 
 
-def main(repo, account, user_settings):
-    set_globals(repo, account, user_settings)
+def main(theme, account, user_settings):
+    set_globals(theme, account, user_settings)
     app = create_app()
     app.run()
 
@@ -284,6 +285,8 @@ def cart_item_router(path):
 @app.route('/<path:path>')
 def path_router(path):
     print('PATH: ' + path)
+    if 'favicon' in path:
+        return abort(404)
     context_data = handle_request(path)
     if not context_data:
         return redirect('http://localhost:5000/', 302)
