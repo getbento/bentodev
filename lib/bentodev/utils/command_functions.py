@@ -6,8 +6,14 @@ from shutil import get_terminal_size
 from webbrowser import open_new_tab
 from functools import wraps
 
-from bentodev.utils.factory import AccountRequest, SessionFactory, ACCOUNTS_URL, THEMES_URL, TOKEN_URL
-from bentodev.utils.helpers import github_account
+from bentodev.utils.factory import (
+    AccountRequest,
+    SessionFactory,
+    ACCOUNTS_URL,
+    THEMES_URL,
+    TOKEN_URL
+)
+from bentodev.utils.helpers import github_account, get_user_settings
 from bentodev.utils.server import main
 
 HOME_DIR = os.path.expanduser('~')
@@ -78,10 +84,16 @@ def run_flask(account, repo):
     if repo not in cloned_themes:
         print("Theme has not been cloned!")
         raise SystemExit
-    main(repo, account)
+    user_settings = get_user_settings()
+    main(repo, account, user_settings)
 
 
 def clone_repo(token, slug):
+    user_settings = get_user_settings()
+    print(user_settings)
+    if 'DEV_ROOT' in user_settings:
+        global THEMES_DIR
+        THEMES_DIR = THEMES_DIR.replace(BENTODEV_DIR, user_settings['DEV_ROOT'])
     if github_account(token):
         kwargs = {
             'url': THEMES_URL,

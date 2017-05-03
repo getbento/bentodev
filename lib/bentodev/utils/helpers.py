@@ -62,6 +62,13 @@ def check_user(verbose, username=None):
     return user
 
 
+def get_user_settings():
+    config_file = open(USER_CONFIG, "r")
+    config_data = json.load(config_file)
+    config_file.close()
+    return config_data
+
+
 def token_auth():
     user = check_user(verbose=False)
     print('Enter Password for BentoBox User: %s' % user)

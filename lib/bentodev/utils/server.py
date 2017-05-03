@@ -62,10 +62,12 @@ def create_app():
     return app
 
 
-def set_globals(repo, account):
-    global REPO, ACCOUNT, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR, BUILD_DIR
+def set_globals(repo, account, user_settings):
+    global REPO, ACCOUNT, BENTODEV_URSER_DIR, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR, BUILD_DIR
     REPO = repo
     ACCOUNT = account
+    if 'DEV_ROOT' in user_settings:
+        BENTODEV_URSER_DIR = user_settings['DEV_ROOT']
     REPO_DIR = os.path.join(BENTODEV_URSER_DIR, 'sites', REPO)
     STATIC_DIR = os.path.join(REPO_DIR, 'assets')
     TEMPLATE_DIR = os.path.join(REPO_DIR, 'templates')
@@ -73,8 +75,8 @@ def set_globals(repo, account):
     BUILD_DIR = os.path.join(REPO_DIR, 'assets', 'build')
 
 
-def main(repo, account):
-    set_globals(repo, account)
+def main(repo, account, user_settings):
+    set_globals(repo, account, user_settings)
     app = create_app()
     app.run()
 
