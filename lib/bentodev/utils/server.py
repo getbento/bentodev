@@ -16,30 +16,30 @@ from bentodev.utils.environment import (
 from bentodev.utils.factory import HelpDataRequest, GenericFormRequest, CookieRequest, AjaxFormRequest
 
 
-REPO = str(os.environ['REPO'])
-ACCOUNT = str(os.environ['ACCOUNT'])
-ENVIRON = str(os.environ['ENVIRON'])
-
+REPO = None
+ACCOUNT = None
 MACROS_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates', 'jinja2', 'macros')
-
 HOME_DIR = os.path.expanduser('~')
 BENTODEV_URSER_DIR = os.path.join(HOME_DIR, 'bentodev')
-REPO_DIR = os.path.join(BENTODEV_URSER_DIR, 'sites', REPO)
-STATIC_DIR = os.path.join(REPO_DIR, 'assets')
-TEMPLATE_DIR = os.path.join(REPO_DIR, 'templates')
-SCSS_DIR = os.path.join(REPO_DIR, 'assets', 'scss')
-BUILD_DIR = os.path.join(REPO_DIR, 'assets', 'build')
-
+REPO_DIR = None
+STATIC_DIR = None
+TEMPLATE_DIR = None
+SCSS_DIR = None
+BUILD_DIR = None
 CURRENT_CONTEXT_DATA = None
 CURRENT_CSRF_TOKEN = None
 CURRENT_SESSION_ID = None
 whitelisted_extensions = ['.scss', '.css', '.sass']
 
+app = Flask(__name__)
+
 
 def create_app():
-    app = Flask(__name__)
+    app.debug = True
+    app.jinja_env.auto_reload = True
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+
     app.static_folder = STATIC_DIR
-    print(MACROS_DIR)
     loader = jinja2.ChoiceLoader([
         app.jinja_loader,
         jinja2.FileSystemLoader([TEMPLATE_DIR, SCSS_DIR, MACROS_DIR]),
@@ -55,17 +55,28 @@ def create_app():
     app.jinja_env.add_extension(jinja2.ext.with_)
     custom_filters = {name: function for name, function in getmembers(filters) if isfunction(function)}
     app.jinja_env.filters.update(custom_filters)
-    app.config.update(
-        DEBUG=True,
-        TEMPLATES_AUTO_RELOAD=True
-    )
+
     app.wsgi_app = SassMiddleware(app.wsgi_app, {
         'bentodev': (REPO + 'assets/sass', REPO + 'assets/css')
     })
     return app
 
 
-app = create_app()
+def set_globals(repo, account):
+    global REPO, ACCOUNT, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR, BUILD_DIR
+    REPO = repo
+    ACCOUNT = account
+    REPO_DIR = os.path.join(BENTODEV_URSER_DIR, 'sites', REPO)
+    STATIC_DIR = os.path.join(REPO_DIR, 'assets')
+    TEMPLATE_DIR = os.path.join(REPO_DIR, 'templates')
+    SCSS_DIR = os.path.join(REPO_DIR, 'assets', 'scss')
+    BUILD_DIR = os.path.join(REPO_DIR, 'assets', 'build')
+
+
+def main(repo, account):
+    set_globals(repo, account)
+    app = create_app()
+    app.run()
 
 
 def handle_request(path):
@@ -287,5 +298,4 @@ def path_router(path):
 
 
 if __name__ == "__main__":
-    app = create_app()
-    app.run()
+    main()

@@ -8,6 +8,7 @@ from functools import wraps
 
 from bentodev.utils.factory import AccountRequest, SessionFactory, ACCOUNTS_URL, THEMES_URL, TOKEN_URL
 from bentodev.utils.helpers import github_account
+from bentodev.utils.server import main
 
 HOME_DIR = os.path.expanduser('~')
 BENTODEV_DIR = HOME_DIR + '/bentodev/'
@@ -77,11 +78,7 @@ def run_flask(account, repo):
     if repo not in cloned_themes:
         print("Theme has not been cloned!")
         raise SystemExit
-    dir = os.path.dirname(os.path.realpath(__file__))
-    os.environ['ACCOUNT'] = account
-    os.environ['REPO'] = repo
-    os.environ['FLASK_APP'] = dir + '/server.py'
-    os.system("flask run --debugger")
+    main(repo, account)
 
 
 def clone_repo(token, slug):
