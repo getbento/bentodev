@@ -3,6 +3,7 @@ import os
 import re
 import sass
 import jinja2.ext
+from tempfile import TemporaryDirectory
 from flask import Flask, render_template, make_response, abort, request, json, redirect
 from inspect import getmembers, isfunction
 from sassutils.wsgi import SassMiddleware
@@ -25,7 +26,6 @@ REPO_DIR = None
 STATIC_DIR = None
 TEMPLATE_DIR = None
 SCSS_DIR = None
-BUILD_DIR = None
 CURRENT_CONTEXT_DATA = None
 CURRENT_CSRF_TOKEN = None
 CURRENT_SESSION_ID = None
@@ -64,7 +64,7 @@ def create_app():
 
 
 def set_globals(theme, account, user_settings):
-    global THEME, ACCOUNT, BENTODEV_URSER_DIR, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR, BUILD_DIR
+    global THEME, ACCOUNT, BENTODEV_URSER_DIR, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR
     THEME = theme
     ACCOUNT = account
     if 'DEV_ROOT' in user_settings:
@@ -73,7 +73,6 @@ def set_globals(theme, account, user_settings):
     STATIC_DIR = os.path.join(REPO_DIR, 'assets')
     TEMPLATE_DIR = os.path.join(REPO_DIR, 'templates')
     SCSS_DIR = os.path.join(REPO_DIR, 'assets', 'scss')
-    BUILD_DIR = os.path.join(REPO_DIR, 'assets', 'build')
 
 
 def main(theme, account, user_settings):
@@ -126,25 +125,26 @@ def get_csrf_token():
 
 
 def compile_scss(path):
-    for root, dirs, files in os.walk(SCSS_DIR):
-        new_path = root.replace(SCSS_DIR, BUILD_DIR)
-        if not os.path.isdir(new_path):
-            os.makedirs(new_path)
-        for file in files:
-            name, extension = os.path.splitext(file)
-            if extension not in whitelisted_extensions:
-                continue
-            with codecs.open(os.path.join(new_path, file), 'w+', 'utf-8') as outfile:
-                try:
-                    filepath = os.path.join(root.replace(SCSS_DIR, ''), file)
-                    template = app.jinja_env.get_template(filepath)
-                    outfile.write(template.render(**CURRENT_CONTEXT_DATA))
-                except Exception as e:
-                    print('Error: ' + str(e))
-    file_path = os.path.join(BUILD_DIR, path.split('/')[-1])
-    with codecs.open(file_path, 'r', 'utf-8') as file:
-        scss = file.read()
-    return sass.compile(string=scss, include_paths=[BUILD_DIR], output_style='nested')
+    with TemporaryDirectory() as BUILD_DIR:
+        for root, dirs, files in os.walk(SCSS_DIR):
+            new_path = root.replace(SCSS_DIR, BUILD_DIR)
+            if not os.path.isdir(new_path):
+                os.makedirs(new_path)
+            for file in files:
+                name, extension = os.path.splitext(file)
+                if extension not in whitelisted_extensions:
+                    continue
+                with codecs.open(os.path.join(new_path, file), 'w+', 'utf-8') as outfile:
+                    try:
+                        filepath = os.path.join(root.replace(SCSS_DIR, ''), file)
+                        template = app.jinja_env.get_template(filepath)
+                        outfile.write(template.render(**CURRENT_CONTEXT_DATA))
+                    except Exception as e:
+                        print('Error: ' + str(e))
+        file_path = os.path.join(BUILD_DIR, path.split('/')[-1])
+        with codecs.open(file_path, 'r', 'utf-8') as file:
+            scss = file.read()
+        return sass.compile(string=scss, include_paths=[BUILD_DIR], output_style='nested')
 
 
 @app.route('/assets/<path:path>')
