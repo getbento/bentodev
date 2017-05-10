@@ -48,25 +48,35 @@ def check_user(verbose, username=None):
     user = None
     while not user:
         config_file = open(USER_CONFIG, "r")
-        config_data = json.load(config_file)
-        config_file.close()
-        if not config_data['BENTO_USER']:
-            if not username:
-                username = input("Enter BentoBox Username: ")
-            config_data['BENTO_USER'] = username
-            with open(USER_CONFIG, "w") as config_file:
-                json.dump(config_data, config_file, sort_keys=True, indent=4)
+        try:
+            config_data = json.load(config_file)
             config_file.close()
-        else:
-            user = config_data['BENTO_USER']
+            if not config_data['BENTO_USER']:
+                if not username:
+                    username = input("Enter BentoBox Username: ")
+                config_data['BENTO_USER'] = username
+                with open(USER_CONFIG, "w") as config_file:
+                    json.dump(config_data, config_file, sort_keys=True, indent=4)
+                config_file.close()
+            else:
+                user = config_data['BENTO_USER']
+        except json.decoder.JSONDecodeError as e:
+            print("User configuration has malformed JSON.")
+            print(e)
+            raise SystemExit
     return user
 
 
 def get_user_settings():
     config_file = open(USER_CONFIG, "r")
-    config_data = json.load(config_file)
-    config_file.close()
-    return config_data
+    try:
+        config_data = json.load(config_file)
+        config_file.close()
+        return config_data
+    except json.decoder.JSONDecodeError as e:
+        print("User configuration has malformed JSON.")
+        print(e)
+        raise SystemExit
 
 
 def token_auth():
@@ -102,20 +112,25 @@ def verify_token(token):
 
 def get_token():
     config_file = open(GLOBAL_CONFIG, "r")
-    config_data = json.load(config_file)
-    config_file.close()
-    token = ''
-    while not token:
-        if not config_data['BENTOBOX_TOKEN']:
-            config_data['BENTOBOX_TOKEN'] = token_auth()
-            with open(GLOBAL_CONFIG, "w") as config_file:
-                json.dump(config_data, config_file, sort_keys=True, indent=4)
-            config_file.close()
-        elif not verify_token(config_data['BENTOBOX_TOKEN']):
-            config_data['BENTOBOX_TOKEN'] = ''
-        else:
-            token = config_data['BENTOBOX_TOKEN']
-    return token
+    try:
+        config_data = json.load(config_file)
+        config_file.close()
+        token = ''
+        while not token:
+            if not config_data['BENTOBOX_TOKEN']:
+                config_data['BENTOBOX_TOKEN'] = token_auth()
+                with open(GLOBAL_CONFIG, "w") as config_file:
+                    json.dump(config_data, config_file, sort_keys=True, indent=4)
+                config_file.close()
+            elif not verify_token(config_data['BENTOBOX_TOKEN']):
+                config_data['BENTOBOX_TOKEN'] = ''
+            else:
+                token = config_data['BENTOBOX_TOKEN']
+        return token
+    except json.decoder.JSONDecodeError as e:
+        print("Token parsing error from malformed JSON.")
+        print(e)
+        raise SystemExit
 
 
 def github_account(token, verbose=True):
