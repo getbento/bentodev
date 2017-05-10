@@ -1,5 +1,21 @@
 from jinja2.ext import Extension
 from jinja2 import Undefined, nodes
+from bentodev.utils.helpers import get_user_settings
+
+LOCAL_HOST = '127.0.0.1'
+LOCAL_PORT = '5000'
+LOCAL_URL = None
+
+
+def set_globals():
+    global LOCAL_HOST, LOCAL_PORT, LOCAL_URL
+    user_settings = get_user_settings()
+    if 'PORT' in user_settings:
+        LOCAL_PORT = user_settings['PORT']
+    if 'HOST' in user_settings:
+        LOCAL_HOST = user_settings['HOST']
+
+    LOCAL_URL = 'http://{}:{}/'.format(LOCAL_HOST, LOCAL_PORT)
 
 
 class CsrfExtension(Extension):
@@ -40,8 +56,9 @@ class StaticFilesExtension(Extension):
         environment.globals["static"] = self._static
 
     def _static(self, path):
+        set_globals()
         path = path.lstrip('/')
-        url = '{}{}'.format('http://localhost:5000/assets/', path)
+        url = '{}{}{}'.format(LOCAL_URL, 'assets/', path)
         return url
 
 
@@ -51,7 +68,7 @@ class ScssUrlExtension(Extension):
         environment.globals["scss"] = self._scss
 
     def _scss(self, path):
-        # file_parts = path.split('.')
+        set_globals()
         path = path.lstrip('/')
-        url = '{}{}'.format('http://localhost:5000/assets/', path)
+        url = '{}{}{}'.format(LOCAL_URL, 'assets/', path)
         return url

@@ -29,6 +29,8 @@ SCSS_DIR = None
 CURRENT_CONTEXT_DATA = None
 CURRENT_CSRF_TOKEN = None
 CURRENT_SESSION_ID = None
+LOCAL_HOST = '127.0.0.1'
+LOCAL_PORT = '5000'
 whitelisted_extensions = ['.scss', '.css', '.sass']
 
 app = Flask(__name__)
@@ -64,7 +66,7 @@ def create_app():
 
 
 def set_globals(theme, account, user_settings):
-    global THEME, ACCOUNT, BENTODEV_URSER_DIR, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR
+    global THEME, ACCOUNT, BENTODEV_URSER_DIR, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR, LOCAL_HOST, LOCAL_PORT, LOCAL_URL
     THEME = theme
     ACCOUNT = account
     if 'DEV_ROOT' in user_settings:
@@ -73,12 +75,17 @@ def set_globals(theme, account, user_settings):
     STATIC_DIR = os.path.join(REPO_DIR, 'assets')
     TEMPLATE_DIR = os.path.join(REPO_DIR, 'templates')
     SCSS_DIR = os.path.join(REPO_DIR, 'assets', 'scss')
+    if 'PORT' in user_settings:
+        LOCAL_PORT = user_settings['PORT']
+    if 'HOST' in user_settings:
+        LOCAL_HOST = user_settings['HOST']
+    LOCAL_URL = 'http://{}:{}/'.format(LOCAL_HOST, LOCAL_PORT)
 
 
 def main(theme, account, user_settings):
     set_globals(theme, account, user_settings)
     app = create_app()
-    app.run()
+    app.run(host=LOCAL_HOST, port=int(LOCAL_PORT))
 
 
 def handle_request(path):
@@ -244,7 +251,7 @@ def generic_store_router(path):
         if 'Set-Cookie' in r.request.headers:
             set_cookies(r.request.cookies)
         if r.request.status_code:
-            return redirect('http://localhost:5000/store/cart', 302)
+            return redirect(LOCAL_URL+'store/cart', 302)
 
 
 @app.route('/store/cart/update/<path:path>', methods=['GET'])
@@ -278,7 +285,7 @@ def cart_item_router(path):
         kwargs['data'].update(cookies)
         r = GenericFormRequest(**kwargs)
         r.get()
-        return redirect('http://localhost:5000/store/cart', 302)
+        return redirect(LOCAL_URL+'store/cart', 302)
 
 
 @app.route('/', defaults={'path': ''})
@@ -289,7 +296,7 @@ def path_router(path):
         return abort(404)
     context_data = handle_request(path)
     if not context_data:
-        return redirect('http://localhost:5000/', 302)
+        return redirect(LOCAL_URL, 302)
     get_csrf_token()
     if 'template' in context_data['current']:
         template = context_data['current']['template']
