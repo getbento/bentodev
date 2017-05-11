@@ -16,6 +16,7 @@ Released
 3.0.0     "Star Platinum" TBA
 2.0.0     "Hermit Purple" TBA
 1.0.0     "Joestar"       TBA
+0.1.9     "Speedwagon"    05-11-2017
 0.1.8     "Speedwagon"    05-03-2017
 0.1.7     "Speedwagon"
 0.1.6     "Speedwagon"
