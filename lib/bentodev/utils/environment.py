@@ -1,6 +1,7 @@
 from jinja2.ext import Extension
 from jinja2 import Undefined, nodes
 from bentodev.utils.helpers import get_user_settings
+from bentodev.utils.paginator import Paginator
 
 LOCAL_HOST = '127.0.0.1'
 LOCAL_PORT = '5000'
@@ -72,3 +73,13 @@ class ScssUrlExtension(Extension):
         path = path.lstrip('/')
         url = '{}{}{}'.format(LOCAL_URL, 'assets/', path)
         return url
+
+
+class PaginationExtension(Extension):
+    def __init__(self, environment):
+        super(PaginationExtension, self).__init__(environment)
+        environment.globals["paginate"] = self._paginate
+
+    def _paginate(self, objects, page_size=20, query_param='p'):
+        paginator = Paginator(objects, page_size)
+        return paginator.page(1)

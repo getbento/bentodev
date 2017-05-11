@@ -11,6 +11,7 @@ from money import Money
 
 from bentodev.utils.image_utils import generate_resize_url, get_raw_image_url
 from slugify import slugify as slugify_external
+from bentodev.utils.text import Truncator
 
 
 def linebreaksbr(value):
@@ -201,3 +202,15 @@ def normalize_internal_url(url):
 
 def slugify(value):
     return slugify_external(value)
+
+
+def truncatechars_html(value, arg):
+    """
+    Truncate HTML after `arg` number of chars.
+    Preserve newlines in the HTML.
+    """
+    try:
+        length = int(arg)
+    except ValueError:  # invalid literal for int()
+        return value  # Fail silently.
+    return Truncator(value).chars(length, html=True)

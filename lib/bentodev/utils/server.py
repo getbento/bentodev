@@ -13,6 +13,7 @@ from bentodev.utils.environment import (
     ScssUrlExtension,
     SilentUndefined,
     StaticFilesExtension,
+    PaginationExtension
 )
 from bentodev.utils.factory import HelpDataRequest, GenericFormRequest, CookieRequest, AjaxFormRequest
 
@@ -53,6 +54,7 @@ def create_app():
     app.jinja_env.add_extension(CsrfExtension)
     app.jinja_env.add_extension(StaticFilesExtension)
     app.jinja_env.add_extension(ScssUrlExtension)
+    app.jinja_env.add_extension(PaginationExtension)
     app.jinja_env.add_extension(jinja2.ext.do)
     app.jinja_env.add_extension(jinja2.ext.loopcontrols)
     app.jinja_env.add_extension(jinja2.ext.with_)
@@ -301,6 +303,8 @@ def path_router(path):
     if 'template' in context_data['current']:
         template = context_data['current']['template']
         print("TEMPLATE: " + template)
+        context_data['current']['request']['is_ajax'] = False
+        context_data['current']['request']['is_mobile'] = False
         response = make_response(render_template(template, **context_data))
         response.headers.add('Access-Control-Allow-Origin', '*')
         return response

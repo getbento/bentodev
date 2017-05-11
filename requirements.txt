@@ -17,3 +17,4 @@ six==1.10.0
 smmap2==2.0.1
 Unidecode==0.4.20
 Werkzeug==0.12.1
+Babel==2.4.0
