@@ -99,6 +99,26 @@ To make use of all debugging features, run the BentoBox Django application local
 
    $ bentodev start <account_name> --local
 
+User Configuration
+==================
+
+Additional user settings can be added to the user config file at ``~/bentodev/config.json``. Default settings include:
+
+.. code-block:: javascript
+
+  {
+    "BENTO_USER": "<user_name>"
+  }
+
+Addtional settings can be added by hand. These include
+
+.. code-block:: javascript
+
+  {
+    "DEV_ROOT": "<dir_pat>", (ie. "/Users/<user>/test_folder/")
+    "HOST": "<host_value>", (ie. "0.0.0.0")
+    "PORT": "<port_value>", (i.e "8000")
+  }
 
 Meta
 ====
