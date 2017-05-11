@@ -20,7 +20,7 @@ from bentodev.utils.factory import HelpDataRequest, GenericFormRequest, CookieRe
 
 THEME = None
 ACCOUNT = None
-MACROS_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates', 'jinja2', 'macros')
+MACROS_DIR = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'templates', 'jinja2', 'macros')
 HOME_DIR = os.path.expanduser('~')
 BENTODEV_URSER_DIR = os.path.join(HOME_DIR, 'bentodev')
 REPO_DIR = None
@@ -38,6 +38,7 @@ app = Flask(__name__)
 
 
 def create_app():
+    print(MACROS_DIR)
     app.debug = True
     app.threaded = True
 
