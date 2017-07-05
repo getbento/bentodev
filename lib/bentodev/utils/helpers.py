@@ -106,10 +106,10 @@ def verify_token(token):
     }
     r = VerifyRequest(**kwargs)
     r.post()
-    if not r.request.ok:
-        print('Token Expired')
-        return False
-    return True
+    if r.request.ok:
+        return True
+    print('Token Expired')
+    return False
 
 
 def write_config(config_data):
@@ -163,6 +163,8 @@ def github_account(token, verbose=True):
                     "Type 'yes' to continue, or 'no' to cancel: ")
                 if complete_flag != 'yes':
                     raise SystemExit
+            else:
+                token = get_token()
     return github_check
 
 
