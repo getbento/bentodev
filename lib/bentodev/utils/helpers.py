@@ -18,7 +18,8 @@ BENTODEV_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 CONFIG_DIR = os.path.join(BENTODEV_DIR, 'config')
 GLOBAL_CONFIG = os.path.join(CONFIG_DIR, 'base_config.json')
 CONFIG_EMPTY = os.path.join(BENTODEV_DIR, 'setup_files', 'config.json')
-GLOBAL_CONFIG_EMPTY = os.path.join(BENTODEV_DIR, 'setup_files', 'base_config.json')
+GLOBAL_CONFIG_EMPTY = os.path.join(
+    BENTODEV_DIR, 'setup_files', 'base_config.json')
 
 
 def create_user_structure(verbose):
@@ -56,7 +57,8 @@ def check_user(verbose, username=None):
                     username = input("Enter BentoBox Username: ")
                 config_data['BENTO_USER'] = username
                 with open(USER_CONFIG, "w") as config_file:
-                    json.dump(config_data, config_file, sort_keys=True, indent=4)
+                    json.dump(config_data, config_file,
+                              sort_keys=True, indent=4)
                 config_file.close()
             else:
                 user = config_data['BENTO_USER']
@@ -110,6 +112,12 @@ def verify_token(token):
     return True
 
 
+def write_config(config_data):
+    with open(GLOBAL_CONFIG, "w") as config_file:
+        json.dump(config_data, config_file, sort_keys=True, indent=4)
+        config_file.close()
+
+
 def get_token():
     config_file = open(GLOBAL_CONFIG, "r")
     try:
@@ -119,11 +127,10 @@ def get_token():
         while not token:
             if not config_data['BENTOBOX_TOKEN']:
                 config_data['BENTOBOX_TOKEN'] = token_auth()
-                with open(GLOBAL_CONFIG, "w") as config_file:
-                    json.dump(config_data, config_file, sort_keys=True, indent=4)
-                config_file.close()
+                write_config(config_data)
             elif not verify_token(config_data['BENTOBOX_TOKEN']):
                 config_data['BENTOBOX_TOKEN'] = ''
+                write_config(config_data)
             else:
                 token = config_data['BENTOBOX_TOKEN']
         return token
@@ -143,14 +150,17 @@ def github_account(token, verbose=True):
             r = GitHubAccountRequest(**kwargs)
             r.get()
             if r.request.ok and r.json() and verbose:
-                print('Connected to GitHub Account: {}'.format(str(r.json()[0]['username'])))
+                print('Connected to GitHub Account: {}'.format(
+                    str(r.json()[0]['username'])))
                 github_check = True
             elif r.request.ok and not r.json():
                 print('You have not connected your GitHub!')
                 print('Opening BentoBox Admin to Connect GitHub Account!')
-                open_new_tab('https://seamores.getbento.com/bentobox/developers/')
+                open_new_tab(
+                    'https://seamores.getbento.com/bentobox/developers/')
                 print("Waiting. Have you connected your GitHub Account?")
-                complete_flag = input("Type 'yes' to continue, or 'no' to cancel: ")
+                complete_flag = input(
+                    "Type 'yes' to continue, or 'no' to cancel: ")
                 if complete_flag != 'yes':
                     raise SystemExit
     return github_check
