@@ -4,14 +4,14 @@ import random
 import json
 import math
 import re
-
+import unicodedata
 from decimal import Decimal
 from dateutil import parser
 from money import Money
 
 from bentodev.utils.image_utils import generate_resize_url, get_raw_image_url
-from slugify import slugify as slugify_external
 from bentodev.utils.text import Truncator
+from bentodev.utils.safestring import mark_safe
 
 
 def linebreaksbr(value):
@@ -203,10 +203,6 @@ def normalize_internal_url(url):
     return '/%s/' % url
 
 
-def slugify(value):
-    return slugify_external(value)
-
-
 def truncatechars_html(value, arg):
     """
     Truncate HTML after `arg` number of chars.
@@ -217,3 +213,19 @@ def truncatechars_html(value, arg):
     except ValueError:  # invalid literal for int()
         return value  # Fail silently.
     return Truncator(value).chars(length, html=True)
+
+
+def slugify(value, allow_unicode=False):
+    """
+    Convert to ASCII if 'allow_unicode' is False. Convert spaces to hyphens.
+    Remove characters that aren't alphanumerics, underscores, or hyphens.
+    Convert to lowercase. Also strip leading and trailing whitespace.
+    """
+    value = str(value)
+    if allow_unicode:
+        value = unicodedata.normalize('NFKC', value)
+    else:
+        value = unicodedata.normalize('NFKD', value).encode(
+            'ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+    return mark_safe(re.sub(r'[-\s]+', '-', value))
