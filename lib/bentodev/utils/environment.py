@@ -11,12 +11,15 @@ LOCAL_URL = None
 def set_globals():
     global LOCAL_HOST, LOCAL_PORT, LOCAL_URL
     user_settings = get_user_settings()
-    if 'PORT' in user_settings:
-        LOCAL_PORT = user_settings['PORT']
-    if 'HOST' in user_settings:
-        LOCAL_HOST = user_settings['HOST']
+    if 'SERVER_URL' in user_settings:
+        LOCAL_URL = user_settings['SERVER_URL']
+    else:
+        if 'PORT' in user_settings:
+            LOCAL_PORT = user_settings['PORT']
+        if 'HOST' in user_settings:
+            LOCAL_HOST = user_settings['HOST']
 
-    LOCAL_URL = 'http://{}:{}/'.format(LOCAL_HOST, LOCAL_PORT)
+        LOCAL_URL = 'http://{}:{}/'.format(LOCAL_HOST, LOCAL_PORT)
 
 
 class CsrfExtension(Extension):
@@ -47,11 +50,13 @@ class SilentUndefined(Undefined):
     """
     Dont break pageloads because vars arent there!
     """
+
     def _fail_with_undefined_error(self, *args, **kwargs):
         return ''
 
 
 class StaticFilesExtension(Extension):
+
     def __init__(self, environment):
         super(StaticFilesExtension, self).__init__(environment)
         environment.globals["static"] = self._static
@@ -64,6 +69,7 @@ class StaticFilesExtension(Extension):
 
 
 class ScssUrlExtension(Extension):
+
     def __init__(self, environment):
         super(ScssUrlExtension, self).__init__(environment)
         environment.globals["scss"] = self._scss
@@ -76,6 +82,7 @@ class ScssUrlExtension(Extension):
 
 
 class PaginationExtension(Extension):
+
     def __init__(self, environment):
         super(PaginationExtension, self).__init__(environment)
         environment.globals["paginate"] = self._paginate
