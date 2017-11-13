@@ -17,6 +17,8 @@ def set_globals():
         LOCAL_HOST = user_settings['HOST']
 
     LOCAL_URL = 'http://{}:{}/'.format(LOCAL_HOST, LOCAL_PORT)
+    if 'SERVER_URL' in user_settings:
+        LOCAL_URL = user_settings['SERVER_URL']
 
 
 class CsrfExtension(Extension):

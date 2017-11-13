@@ -32,6 +32,7 @@ CURRENT_CSRF_TOKEN = None
 CURRENT_SESSION_ID = None
 LOCAL_HOST = '127.0.0.1'
 LOCAL_PORT = '5000'
+LOCAL_URL = None
 whitelisted_extensions = ['.scss', '.css', '.sass']
 
 app = Flask(__name__)
@@ -83,6 +84,8 @@ def set_globals(theme, account, user_settings):
     if 'HOST' in user_settings:
         LOCAL_HOST = user_settings['HOST']
     LOCAL_URL = 'http://{}:{}/'.format(LOCAL_HOST, LOCAL_PORT)
+    if 'SERVER_URL' in user_settings:
+        LOCAL_URL = user_settings['SERVER_URL']
 
 
 def main(theme, account, user_settings):
