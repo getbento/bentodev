@@ -1,4 +1,4 @@
-0.1.15    "Speedwagon"    11-13-2017
+0.1.16    "Speedwagon"    12-11-2017
 BentoDev Releases
 =================
 
@@ -7,8 +7,8 @@ For more info http://developers.getbento.com/docs/environment-setup
 Active Development
 ++++++++++++++++++
 
-0.1.15    "Speedwagon" - in progress
-0.1.14    "Speedwagon" - maintenance
+0.1.17    "Speedwagon" - in progress
+0.1.16    "Speedwagon" - maintenance
 
 Released
 ++++++++
@@ -17,6 +17,7 @@ Released
 3.0.0     "Star Platinum" TBA
 2.0.0     "Hermit Purple" TBA
 1.0.0     "Joestar"       TBA
+0.1.16    "Speedwagon"    12-11-2017
 0.1.15    "Speedwagon"    11-13-2017
 0.1.14    "Speedwagon"    11-08-2017
 0.1.13    "Speedwagon"    09-28-2017
