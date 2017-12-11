@@ -52,6 +52,23 @@ def time(value, format='%H:%M'):
     return value.strftime(format)
 
 
+def image_url(source):
+    if not source:
+        return''
+
+    try:
+        return source['url']
+    except (TypeError, KeyError):
+        return source
+
+
+def image_alt(source):
+    try:
+        return source['alt_text']
+    except (TypeError, KeyError):
+        return ''
+
+
 def raw_image(source):
     return get_raw_image_url(source)
 
