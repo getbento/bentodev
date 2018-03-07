@@ -54,15 +54,24 @@ def time(value, format='%H:%M'):
 
 def image_url(source):
     if not source:
-        return''
+        return ''
+
+    try:
+        return source['image_path']
+    except (TypeError, KeyError):
+        pass
 
     try:
         return source['url']
     except (TypeError, KeyError):
-        return source
+        pass
+
+    return source
 
 
 def image_alt(source):
+    if not source:
+        return ''
     try:
         return source['alt_text']
     except (TypeError, KeyError):
@@ -111,22 +120,27 @@ def money(amount, locale='en_US', format=u'¤#,##0.00', currency_digits=False):
 
 
 def round_money(amount):
-    if amount:
-        # take the amount and convert it to a float, then
-        amount_as_float = float(amount)
-        # round it UP to the nearest non-decimal value (1.23 -> 2.00)
-        rounded_float_amount = math.ceil(amount_as_float)
-        # checks if rounded number is bigger then stores that as a new variable
-        has_decimal = rounded_float_amount > amount_as_float
-        # format money for if price is int
-        money_format = u'#,##0'
-        # format money for if price is float
-        if has_decimal:
-            money_format = u'#,##0.00'
-        # return price in correct format
-        return money(amount, format=money_format)
-    else:
+    if not amount:
         return amount
+
+    # take the amount and convert it to a float, then
+    amount_as_float = float(amount)
+
+    # round it UP to the nearest non-decimal value (1.23 -> 2.00)
+    rounded_float_amount = math.ceil(amount_as_float)
+
+    # checks if rounded number is bigger then stores that as a new variable
+    has_decimal = rounded_float_amount > amount_as_float
+
+    # format money for if price is int
+    money_format = u'#,##0'
+
+    # format money for if price is float
+    if has_decimal:
+        money_format = u'#,##0.00'
+
+    # return price in correct format
+    return money(amount, format=money_format)
 
 
 def dumps(obj, **kwargs):

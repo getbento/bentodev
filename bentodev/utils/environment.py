@@ -74,7 +74,7 @@ class ScssUrlExtension(Extension):
         super(ScssUrlExtension, self).__init__(environment)
         environment.globals["scss"] = self._scss
 
-    def _scss(self, path):
+    def _scss(self, path, account=None):
         set_globals()
         path = path.lstrip('/')
         url = '{}{}{}'.format(LOCAL_URL, 'assets/', path)
@@ -87,6 +87,6 @@ class PaginationExtension(Extension):
         super(PaginationExtension, self).__init__(environment)
         environment.globals["paginate"] = self._paginate
 
-    def _paginate(self, objects, page_size=20, query_param='p'):
+    def _paginate(self, objects, page_size=20, query_param='p', current_page=None):
         paginator = Paginator(objects, page_size)
         return paginator.page(1)

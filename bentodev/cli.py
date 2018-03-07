@@ -1,17 +1,19 @@
-#!/usr/bin/env python
-
+import click
+import os
 import sys
 
-import click
-from bentodev.release import __version__
+from bentodev.__version__ import __version__
 from bentodev.utils.command_functions import (
     get_theme,
     clone_repo,
     run_flask,
     list_accounts,
     ListFlags)
-from bentodev.utils.helpers import check, check_user, create_user_structure, get_token
-import os
+from bentodev.utils.helpers import (
+    check,
+    check_user,
+    create_user_structure,
+    get_token)
 
 
 @click.group()
@@ -75,9 +77,12 @@ def start(account):
         list_accounts(token, ListFlags.START)
 
 
-if __name__ == '__main__':
+def main():
     if sys.version_info[0] == 2:
         print("Current environment is Python 2.")
         print("Please use a Python 3.6 virtualenv.")
         raise SystemExit
     cli()
+
+if __name__ == '__main__':
+    main()
