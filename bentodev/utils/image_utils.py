@@ -4,8 +4,11 @@ from bentodev.config.settings import (
     AWS_S3_CUSTOM_DOMAIN
 )
 
+from collections import OrderedDict
+
 
 class Bunch:
+
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
@@ -34,6 +37,9 @@ def generate_resized_image_class(source, width=1200, height=None, fit='max'):
 
 
 def get_base_source(source):
+    if type(source) is dict or type(source) is OrderedDict:
+        source = source.get('image_path', source.get('url'))
+
     if not source:
         return ''
 
@@ -42,6 +48,11 @@ def get_base_source(source):
 
     if source.startswith(IMGIX_URL):
         source = source[len(IMGIX_URL):]
+
+    # Splitting the IMGIX_URL was added to handle legacy URLs that did not
+    # contain https
+    if source.startswith(IMGIX_URL.split('https:')[1]):
+        source = source[len(IMGIX_URL.split('https:')[1]):]
 
     cdn_domain = 'https://%s/' % AWS_S3_CUSTOM_DOMAIN
 

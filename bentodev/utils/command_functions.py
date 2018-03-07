@@ -32,7 +32,8 @@ def set_user_settings():
     if 'DEV_ROOT' in user_settings:
         if os.path.exists(user_settings['DEV_ROOT']):
             global THEMES_DIR
-            THEMES_DIR = THEMES_DIR.replace(BENTODEV_DIR, user_settings['DEV_ROOT'])
+            THEMES_DIR = THEMES_DIR.replace(
+                BENTODEV_DIR, user_settings['DEV_ROOT'])
         else:
             print('Path defined for DEV_ROOT does not exist')
             raise SystemExit
@@ -46,11 +47,13 @@ def get_theme(token, account):
         'token': token
     }
     r = AccountRequest(**kwargs)
+    print(r.url)
     r.get()
     if r.request.ok and r.json():
         theme_pk = r.json()[0]['theme']
         url = '{}/{}'.format(THEMES_URL, theme_pk)
         s = SessionFactory(url=url, token=token)
+        print(s.url)
         s.get()
         s.get()
         if s.request.ok and s.json():
@@ -61,7 +64,8 @@ def get_cloned_themes():
     if os.path.exists(THEMES_DIR):
         return {name for name in os.listdir(THEMES_DIR)}
     else:
-        print('Custom folder `{}` does not exists.\nPlease create the folder.'.format(str(THEMES_DIR)))
+        print('Custom folder `{}` does not exists.\nPlease create the folder.'.format(
+            str(THEMES_DIR)))
         raise SystemExit
 
 
@@ -69,7 +73,7 @@ def list_available_repos():
     set_user_settings()
     cloned_themes = get_cloned_themes()
     print("Select a theme to work with:")
-    print('{0:-<{WIDTH}}'.format('-', '', WIDTH=WIDTH*2))
+    print('{0:-<{WIDTH}}'.format('-', '', WIDTH=WIDTH * 2))
     [print(theme) for theme in cloned_themes]
 
 
@@ -85,7 +89,7 @@ def list_accounts(token, flag=None):
         if r.request.ok and r.json():
             cloned_themes = get_cloned_themes()
             print('{0: <{2}} | {1: <{2}}'.format('Account', 'Theme', WIDTH))
-            print('{0:-<{WIDTH}}'.format('-', '', WIDTH=WIDTH*2))
+            print('{0:-<{WIDTH}}'.format('-', '', WIDTH=WIDTH * 2))
             for account in r.json():
                 slug = account['slug']
                 theme_name = account['theme']
@@ -94,7 +98,8 @@ def list_accounts(token, flag=None):
                     if flag is ListFlags.CLONE:
                         break
                     status = '[cloned]'
-                print('{0: <{3}} | {1:<15} {2: <{3}}'.format(slug, theme_name, status, WIDTH))
+                print('{0: <{3}} | {1:<15} {2: <{3}}'.format(
+                    slug, theme_name, status, WIDTH))
 
 
 def run_flask(account, theme):
@@ -118,14 +123,17 @@ def clone_repo(token, slug):
         if r.json():
             for theme in r.json():
                 if theme['slug'] == slug:
-                    github_repo_url = 'git@github.com:getbento/{}.git'.format(slug)
+                    github_repo_url = 'git@github.com:getbento/{}.git'.format(
+                        slug)
                     try:
                         clone_dir = '{}{}'.format(THEMES_DIR, slug)
                         if github_repo_url:
                             Repo.clone_from(github_repo_url, clone_dir)
-                            print('Succesfully cloned {} to:\n{}'.format(slug, clone_dir))
+                            print('Succesfully cloned {} to:\n{}'.format(
+                                slug, clone_dir))
                         else:
-                            print('GitHub repo url not connected to theme through BentoBox')
+                            print(
+                                'GitHub repo url not connected to theme through BentoBox')
                     except Exception as e:
                         print(e)
                         raise SystemExit

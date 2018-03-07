@@ -33,7 +33,7 @@ TOKEN_URL = '{}{}{}'.format(
 VERIFY_URL = '{}{}{}'.format(
     PROTOCOL, BENTOBOX_URL, 'api/developers/api-token-verify/')
 CSRF_TOKEN_URL = '{}{}{}'.format(
-        PROTOCOL, BENTOBOX_URL, 'api/developers/csrf-token/')
+    PROTOCOL, BENTOBOX_URL, 'api/developers/csrf-token/')
 
 
 def error(self):
@@ -141,7 +141,8 @@ class SessionFactory():
         if 'headers' in kwargs:
             self.session.headers.update(kwargs['headers'])
         if 'token' in kwargs:
-            self.session.headers.update({'Authorization': 'JWT ' + kwargs['token']})
+            self.session.headers.update(
+                {'Authorization': 'JWT ' + kwargs['token']})
         self.data = {}
         if 'data' in kwargs:
             self.data.update(kwargs['data'])
@@ -198,6 +199,7 @@ class TokenRequest(RequestFactory):
 
 
 class VerifyRequest(SessionFactory):
+
     def __init__(self, *args, **kwargs):
         super(VerifyRequest, self).__init__(
             url=VERIFY_URL,
@@ -207,6 +209,7 @@ class VerifyRequest(SessionFactory):
 
 
 class GitHubAccountRequest(SessionFactory):
+
     def __init__(self, *args, **kwargs):
         super(GitHubAccountRequest, self).__init__(
             url=GITHUB_ACCOUNT_URL,
@@ -215,15 +218,18 @@ class GitHubAccountRequest(SessionFactory):
 
 
 class HelpDataRequest(RequestFactory):
+
     def __init__(self, *args, **kwargs):
         super(HelpDataRequest, self).__init__(
-            url=context_url_build(account=kwargs['account'], path=kwargs['path']),
+            url=context_url_build(
+                account=kwargs['account'], path=kwargs['path']),
             headers={'X-Requested-With': 'XMLHttpRequest'},
             cookies=kwargs['cookies']
         )
 
 
 class CookieRequest(RequestFactory):
+
     def __init__(self, *args, **kwargs):
         super(CookieRequest, self).__init__(
             url=CSRF_TOKEN_URL
@@ -232,6 +238,7 @@ class CookieRequest(RequestFactory):
 
 
 class AccountRequest(SessionFactory):
+
     def __init__(self, *args, **kwargs):
         super(AccountRequest, self).__init__(
             url=account_url_builder(account=kwargs['account']),
@@ -244,6 +251,7 @@ class AccountRequest(SessionFactory):
 
 
 class AjaxFormRequest(RequestFactory):
+
     def __init__(self, *args, **kwargs):
         super(AjaxFormRequest, self).__init__(
             url=form_url_build(account=kwargs['account'], path=kwargs['path']),
@@ -269,6 +277,7 @@ class AjaxFormRequest(RequestFactory):
 
 
 class GenericFormRequest(RequestFactory):
+
     def __init__(self, *args, **kwargs):
         super(GenericFormRequest, self).__init__(
             url=form_url_build(account=kwargs['account'], path=kwargs['path']),
