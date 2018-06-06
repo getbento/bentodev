@@ -67,12 +67,13 @@ def clone(slug):
 
 @cli.command('start')
 @click.argument('account', required=False)
-def start(account):
+@click.argument('data_account', required=False)
+def start(account, data_account):
     """Begin running the development server"""
     token = get_token()
     if account:
         repo = get_theme(token, account)
-        run_flask(account, repo)
+        run_flask(account, repo, data_account)
     else:
         list_accounts(token, ListFlags.START)
 

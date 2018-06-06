@@ -102,13 +102,13 @@ def list_accounts(token, flag=None):
                     slug, theme_name, status, WIDTH))
 
 
-def run_flask(account, theme):
+def run_flask(account, theme, data_account=None):
     user_settings = set_user_settings()
     cloned_themes = get_cloned_themes()
     if theme not in cloned_themes:
         print("Theme `{}` has not been cloned!".format(theme))
         raise SystemExit
-    main(theme, account, user_settings)
+    main(theme, account, user_settings, data_account)
 
 
 def clone_repo(token, slug):

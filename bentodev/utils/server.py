@@ -68,10 +68,14 @@ def create_app():
     return app
 
 
-def set_globals(theme, account, user_settings):
-    global THEME, ACCOUNT, BENTODEV_URSER_DIR, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR, LOCAL_HOST, LOCAL_PORT, LOCAL_URL
+def set_globals(theme, account, user_settings, data_account=None):
+    global THEME, ACCOUNT, DATA_ACCOUNT, BENTODEV_URSER_DIR, REPO_DIR, STATIC_DIR, TEMPLATE_DIR, SCSS_DIR, LOCAL_HOST, LOCAL_PORT, LOCAL_URL
     THEME = theme
     ACCOUNT = account
+    if data_account:
+        DATA_ACCOUNT = data_account
+    else:
+        DATA_ACCOUNT = account
     if 'DEV_ROOT' in user_settings:
         BENTODEV_URSER_DIR = user_settings['DEV_ROOT']
     REPO_DIR = os.path.join(BENTODEV_URSER_DIR, 'sites', THEME)
@@ -85,8 +89,8 @@ def set_globals(theme, account, user_settings):
     LOCAL_URL = 'http://{}:{}/'.format(LOCAL_HOST, LOCAL_PORT)
 
 
-def main(theme, account, user_settings):
-    set_globals(theme, account, user_settings)
+def main(theme, account, user_settings, data_account=None):
+    set_globals(theme, account, user_settings, data_account)
     app = create_app()
     app.run(host=LOCAL_HOST, port=int(LOCAL_PORT))
 
@@ -100,7 +104,7 @@ def handle_request(path):
         'sessionid': CURRENT_SESSION_ID
     }
     kwargs = {
-        'account': ACCOUNT,
+        'account': DATA_ACCOUNT,
         'path': path,
         'help': True,
         'cookies': cookies
