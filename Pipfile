@@ -24,6 +24,7 @@ Babel = "==2.4.0"
 "e1839a8" = {path = ".", editable = true}
 
 [dev-packages]
+twine = "*"
 
 [requires]
 python_version = "3.6"
