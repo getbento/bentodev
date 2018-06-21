@@ -21,6 +21,7 @@ MarkupSafe = "==1.0"
 Unidecode = "==0.4.20"
 Werkzeug = "==0.12.1"
 Babel = "==2.4.0"
+"e1839a8" = {path = ".", editable = true}
 
 [dev-packages]
 

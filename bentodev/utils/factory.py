@@ -1,3 +1,4 @@
+
 import requests
 from requests.exceptions import ConnectionError, Timeout
 import json
@@ -248,6 +249,15 @@ class AccountRequest(SessionFactory):
     def get(self):
         super(AccountRequest, self).get()
         super(AccountRequest, self).get()
+
+
+class GenericGetRequest(RequestFactory):
+
+    def __init__(self, *args, **kwargs):
+        super(GenericGetRequest, self).__init__(
+            url=form_url_build(account=kwargs['account'], path=kwargs['path']),
+            headers={'X-Requested-With': 'XMLHttpRequest'},
+        )
 
 
 class AjaxFormRequest(RequestFactory):

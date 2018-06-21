@@ -15,12 +15,13 @@ from bentodev.utils.environment import (
     StaticFilesExtension,
     PaginationExtension
 )
-from bentodev.utils.factory import HelpDataRequest, GenericFormRequest, CookieRequest, AjaxFormRequest
+from bentodev.utils.factory import GenericGetRequest, HelpDataRequest, GenericFormRequest, CookieRequest, AjaxFormRequest
 
 
 THEME = None
 ACCOUNT = None
-MACROS_DIR = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'templates', 'jinja2', 'macros')
+MACROS_DIR = os.path.join(os.path.abspath(os.path.dirname(
+    os.path.dirname(__file__))), 'templates', 'jinja2', 'macros')
 HOME_DIR = os.path.expanduser('~')
 BENTODEV_URSER_DIR = os.path.join(HOME_DIR, 'bentodev')
 REPO_DIR = None
@@ -59,7 +60,8 @@ def create_app():
     app.jinja_env.add_extension(jinja2.ext.do)
     app.jinja_env.add_extension(jinja2.ext.loopcontrols)
     app.jinja_env.add_extension(jinja2.ext.with_)
-    custom_filters = {name: function for name, function in getmembers(filters) if isfunction(function)}
+    custom_filters = {name: function for name,
+                      function in getmembers(filters) if isfunction(function)}
     app.jinja_env.filters.update(custom_filters)
 
     app.wsgi_app = SassMiddleware(app.wsgi_app, {
@@ -150,7 +152,8 @@ def compile_scss(path):
                     continue
                 with codecs.open(os.path.join(new_path, file), 'w+', 'utf-8') as outfile:
                     try:
-                        filepath = os.path.join(root.replace(SCSS_DIR, ''), file)
+                        filepath = os.path.join(
+                            root.replace(SCSS_DIR, ''), file)
                         template = app.jinja_env.get_template(filepath)
                         outfile.write(template.render(**CURRENT_CONTEXT_DATA))
                     except Exception as e:
@@ -159,6 +162,23 @@ def compile_scss(path):
         with codecs.open(file_path, 'r', 'utf-8') as file:
             scss = file.read()
         return sass.compile(string=scss, include_paths=[BUILD_DIR], output_style='nested')
+
+
+@app.route('/robots.txt')
+def robots_router():
+    kwargs = {
+        'account': ACCOUNT,
+        'path': 'robots.txt',
+    }
+    r = GenericGetRequest(**kwargs)
+    r.get()
+
+    response = app.response_class(
+        response=json.dumps(r.request.text),
+        status=r.request.status_code,
+        mimetype=r.request.headers['Content-Type']
+    )
+    return response
 
 
 @app.route('/assets/<path:path>')
@@ -258,7 +278,7 @@ def generic_store_router(path):
         if 'Set-Cookie' in r.request.headers:
             set_cookies(r.request.cookies)
         if r.request.status_code:
-            return redirect(LOCAL_URL+'store/cart', 302)
+            return redirect(LOCAL_URL + 'store/cart', 302)
 
 
 @app.route('/store/cart/update/<path:path>', methods=['GET'])
@@ -292,7 +312,7 @@ def cart_item_router(path):
         kwargs['data'].update(cookies)
         r = GenericFormRequest(**kwargs)
         r.get()
-        return redirect(LOCAL_URL+'store/cart', 302)
+        return redirect(LOCAL_URL + 'store/cart', 302)
 
 
 @app.route('/', defaults={'path': ''})
