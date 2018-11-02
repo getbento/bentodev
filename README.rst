@@ -90,14 +90,12 @@ Once a theme has been cloned you can then run a small local server that will han
 
 You should then see the server run, where you can connect at `localhost:5000 <http://localhost:5000>`_
 
-Development
-===========
+Local Development
+=================
 
-To develop simply Git clone the associated URL.
-
-Feature or test branches created must have be approved through pull request review before merging with master.
-
-To make use of all debugging features, run the BentoBox Django application locally and then run the bentodev server with the flag ``--local``:
+Working with Local BentoBox
+---------------------------
+To use all debugging tools, create new features, or use local data, we can switch which server `bentodev` gets data from. The `--local` flag will use the `HOST` and `PORT` user configuration to access a local BentoBox Django server. Example below:
 
 .. code-block:: bash
 
