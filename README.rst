@@ -134,7 +134,6 @@ Please use the following support channels:
   to ask questions (please make sure to use the
   `bentodev <http://stackoverflow.com/questions/tagged/bentodev>`_ tag).
 * Tweet directly to `@bentoboxnyc <https://twitter.com/bentoboxnyc>`_.
-* You can also tweet directly to `@djstein`_.
 
 Related projects
 ----------------
