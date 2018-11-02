@@ -19,17 +19,21 @@ Installation
 
 NOTE: This package is currently only supported on POSIX systems. For those on Windows it is recommended to create a new Vagrant box before installing.
 
-It is recommended to install bentodev on a seperate Python 3 virtual environment:
+It is recommended to install `bentodev` on a seperate Python 3 virtual environment.
+
+For use with `Pipenv`
+
+.. code-block:: bash
+
+  $ pipenv --three
+  $ pipenv install bentodev
+
+For use with `venv`
 
 .. code-block:: bash
 
   $ virtualenv -p python3 venv
   $ source venv/bin/activate
-
-After ensuring one is on the correct Python 3 environment simply pip install the latest version:
-
-.. code-block:: bash
-
   $ pip install bentodev
 
 Usage
