@@ -103,6 +103,9 @@ To use all debugging tools, create new features, or use local data, we can switc
 
 Working on `bentodev`
 ---------------------
+
+Setup for Local Development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To make changes to `bentodev` please clone the repository, then with a seperate virtual environment, install it as a local dependency.
 
 .. code-block:: bash
@@ -114,6 +117,9 @@ To make changes to `bentodev` please clone the repository, then with a seperate 
 This will clone bentodev, create a new virtualenv, and install the local bentodev to that environment.
 
 Then, changes made will be reflected in the running application when using the newly created virtual environment.
+
+Deploying bentodev Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TO DEPLOY THOSE CHANGES to the `bentodev PyPi repo <https://pypi.org/project/bentodev/>`_, ensure that the dev dependencies from `bentodev`s Pipfile are installed to a virtual environment or are on your system. Mainly, `setuptools` and `twine` are required for deployment. Bump the version inside: `bentodev/__version__.py`.
 
