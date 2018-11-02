@@ -118,8 +118,8 @@ Addtional settings can be added by hand. These include
 
   {
     "DEV_ROOT": "<dir_pat>", (ie. "/Users/<user>/test_folder/")
-    "HOST": "<host_value>", (ie. "0.0.0.0")
-    "PORT": "<port_value>", (i.e "8000")
+    "HOST": "<host_value>", (i.e and default "0.0.0.0")
+    "PORT": "<port_value>", (i.e and default "8000")
   }
 
 Meta
