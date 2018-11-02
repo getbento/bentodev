@@ -101,6 +101,28 @@ To use all debugging tools, create new features, or use local data, we can switc
 
    $ bentodev start <account_name> --local
 
+Working on `bentodev`
+---------------------
+To make changes to `bentodev` please clone the repository, then with a seperate virtual environment, install it as a local dependency.
+
+.. code-block:: bash
+
+   $ git clone git@github.com:getbento/bentodev.git
+   $ mkdir bentodev-local/ && cd bentodev-local && pipenv --three && pipenv shell
+   $ pipenv install -e ../path/to/cloned/pipenv
+
+This will clone bentodev, create a new virtualenv, and install the local bentodev to that environment.
+
+Then, changes made will be reflected in the running application when using the newly created virtual environment.
+
+TO DEPLOY THOSE CHANGES to the `bentodev PyPi repo <https://pypi.org/project/bentodev/>`_, ensure that the dev dependencies from `bentodev`s Pipfile are installed to a virtual environment or are on your system. Mainly, `setuptools` and `twine` are required for deployment. Bump the version inside: `bentodev/__version__.py`.
+
+Assuming deps and PyPi configuration is complete, run the following to update the repository:
+
+.. code-block:: bash
+
+   $ python setup.py upload
+
 User Configuration
 ==================
 
