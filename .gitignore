@@ -92,3 +92,6 @@ ENV/
 
 # Ignore Base Config File
 lib/bentodev/config/base_config.json
+
+# VS Code
+.vscode/
