@@ -32,7 +32,7 @@ For use with `venv`
 
 .. code-block:: bash
 
-  $ virtualenv -p python3 venv
+  $ python3 -m venv venv
   $ source venv/bin/activate
   $ pip install bentodev
 
