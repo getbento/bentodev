@@ -12,7 +12,7 @@ Main Features
 * Edit BentoBox themes locally
 * Uses real data when making themes
 * Use Flask to act as a proxy between server requests
-* Uses Jinja2 to rigidly enforce template edits 
+* Uses Jinja2 to rigidly enforce template edits
 
 Installation
 ============
@@ -32,7 +32,7 @@ For use with `venv`
 
 .. code-block:: bash
 
-  $ virtualenv -p python3 venv
+  $ python3 -m venv venv
   $ source venv/bin/activate
   $ pip install bentodev
 
@@ -59,7 +59,7 @@ BentoDev functions are activated via a command line interface.
 
 Setup
 -----
-Upon using BentoDev for the first time you will be propmted to use add your BentoBox account.
+Upon using BentoDev for the first time you will be prompted to use add your BentoBox account.
 
 You may also be asked for a password to get a remote token for your session.
 
@@ -73,7 +73,7 @@ If you do not see any Accounts/Themes you need to create an Account that is asso
 To work on an Account's theme you must first clone the theme. To do so use:
 
 .. code-block:: bash
-  
+
   $ bentodev clone <theme_name>
 
 You may be prompted to connect your GitHub account to BentoBox if you have not done so previously.
@@ -106,7 +106,7 @@ Working on `bentodev`
 
 Setup for Local Development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-To make changes to `bentodev` please clone the repository, then with a seperate virtual environment, install it as a local dependency.
+To make changes to `bentodev` please clone the repository, then with a separate virtual environment, install it as a local dependency.
 
 .. code-block:: bash
 
@@ -140,7 +140,7 @@ Additional user settings can be added to the user config file at ``~/bentodev/co
     "BENTO_USER": "<user_name>"
   }
 
-Addtional settings can be added by hand. These include
+Additional settings can be added by hand. These include
 
 .. code-block:: javascript
 
