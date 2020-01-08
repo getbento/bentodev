@@ -40,9 +40,9 @@ def set_user_settings():
     return user_settings
 
 
-def get_theme(token, account):
+def get_theme(token, account, data_account=None):
     kwargs = {
-        'account': account,
+        'account': data_account if data_account else account,
         'help': True,
         'token': token
     }

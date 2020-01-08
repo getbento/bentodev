@@ -73,7 +73,7 @@ def generate_resize_url(source, width=1200, height=None, fit='max'):
     if height:
         params += "&h=%i" % int(height)
 
-    url = '%s%s?%s' % (IMGIX_URL, source, params)
+    url = '%s?%s' % (source, params)
 
     return url
 
@@ -81,5 +81,4 @@ def generate_resize_url(source, width=1200, height=None, fit='max'):
 def get_raw_image_url(source):
     source = get_base_source(source)
 
-    url = '%s%s' % (IMGIX_URL, source)
-    return url
+    return source
