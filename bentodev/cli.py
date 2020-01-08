@@ -72,7 +72,7 @@ def start(account, data_account):
     """Begin running the development server"""
     token = get_token()
     if account:
-        repo = get_theme(token, account)
+        repo = get_theme(token, account, data_account)
         run_flask(account, repo, data_account)
     else:
         list_accounts(token, ListFlags.START)
