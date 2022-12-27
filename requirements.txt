@@ -11,7 +11,7 @@ pip==9.0.1
 python-dateutil==2.6.0
 pytz==2017.2
 requests==2.20.0
-setuptools==35.0.1
+setuptools==65.5.1
 six==1.10.0
 smmap2==2.0.1
 Unidecode==0.4.20
